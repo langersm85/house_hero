@@ -1,7 +1,7 @@
 
 import { Tabs } from 'expo-router';
 import { useColorScheme } from 'react-native';
-import SymbolView from 'expo-symbols';
+import TabBarIcon from '@/components/TabBarIcon';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -21,7 +21,7 @@ export default function TabLayout() {
           } else if (route.name === 'tasks') {
             symbol = focused ? 'list.bullet.clipboard.fill' : 'list.bullet.clipboard';
           }
-          return <SymbolView size={24} tintColor={color} name={symbol} />;
+          return <TabBarIcon name={symbol} color={color} size={24} />;
         },
       })}>
       <Tabs.Screen name="(home)" options={{ title: 'Home' }} />
