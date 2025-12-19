@@ -1,33 +1,32 @@
 
-import React from 'react';
-import { NativeTabs, Icon, Label } from 'expo-router/unstable-native-tabs';
-import { colors } from '@/styles/commonStyles';
-import { Platform } from 'react-native';
+import { Tabs } from 'expo-router';
+import { useColorScheme } from 'react-native';
+import SymbolView from 'expo-symbols';
 
 export default function TabLayout() {
+  const colorScheme = useColorScheme();
+  const inactiveColor = colorScheme === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)';
+
   return (
-    <NativeTabs>
-      <NativeTabs.Trigger name="(home)">
-        <Icon 
-          sf="house.fill" 
-          size={24}
-        />
-        <Label>Home</Label>
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="tasks">
-        <Icon 
-          sf="list.bullet.clipboard.fill" 
-          size={24}
-        />
-        <Label>Tasks</Label>
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="profile">
-        <Icon 
-          sf="person.fill" 
-          size={24}
-        />
-        <Label>Profile</Label>
-      </NativeTabs.Trigger>
-    </NativeTabs>
+    <Tabs
+      screenOptions={({ route }) => ({
+        tabBarActiveTintColor: '#007AFF',
+        tabBarInactiveTintColor: inactiveColor,
+        tabBarIcon: ({ color, focused }) => {
+          let symbol = '';
+          if (route.name === '(home)') {
+            symbol = focused ? 'house.fill' : 'house';
+          } else if (route.name === 'profile') {
+            symbol = focused ? 'person.fill' : 'person';
+          } else if (route.name === 'tasks') {
+            symbol = focused ? 'list.bullet.clipboard.fill' : 'list.bullet.clipboard';
+          }
+          return <SymbolView size={24} tintColor={color} name={symbol} />;
+        },
+      })}>
+      <Tabs.Screen name="(home)" options={{ title: 'Home' }} />
+      <Tabs.Screen name="tasks" options={{ title: 'Tasks' }} />
+      <Tabs.Screen name="profile" options={{ title: 'Profile' }} />
+    </Tabs>
   );
 }

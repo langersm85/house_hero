@@ -9,6 +9,7 @@ import {
   TextStyle,
   ViewStyle,
   View,
+  StyleSheet,
 } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
@@ -32,7 +33,7 @@ export function IconSymbol({
   weight?: SymbolWeight;
 }) {
   return (
-    <View style={[{ width: size, height: size, justifyContent: 'center', alignItems: 'center' }, style]}>
+    <View style={[styles.iconContainer, { width: size, height: size }, style]}>
       <MaterialIcons
         color={color}
         size={size}
@@ -41,3 +42,10 @@ export function IconSymbol({
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  iconContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});

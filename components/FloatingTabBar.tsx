@@ -262,8 +262,8 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   iconContainer: {
-    width: 24,
-    height: 24,
+    width: 28,
+    height: 28,
     justifyContent: 'center',
     alignItems: 'center',
   },
