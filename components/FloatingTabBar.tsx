@@ -50,10 +50,10 @@ export default function FloatingTabBar({
   const theme = useTheme();
   const animatedValue = useSharedValue(0);
 
-  // Improved active tab detection with better path matching
+  // Improved active tab detection with better path matching and guaranteed default
   const activeTabIndex = React.useMemo(() => {
     // Find the best matching tab based on the current pathname
-    let bestMatch = -1;
+    let bestMatch = 0; // Default to first tab instead of -1
     let bestMatchScore = 0;
 
     tabs.forEach((tab, index) => {
@@ -82,18 +82,16 @@ export default function FloatingTabBar({
       }
     });
 
-    // Default to first tab if no match found
-    return bestMatch >= 0 ? bestMatch : 0;
+    // Always return a valid index (0 if no match found)
+    return bestMatch;
   }, [pathname, tabs]);
 
   React.useEffect(() => {
-    if (activeTabIndex >= 0) {
-      animatedValue.value = withSpring(activeTabIndex, {
-        damping: 20,
-        stiffness: 120,
-        mass: 1,
-      });
-    }
+    animatedValue.value = withSpring(activeTabIndex, {
+      damping: 20,
+      stiffness: 120,
+      mass: 1,
+    });
   }, [activeTabIndex, animatedValue]);
 
   const handleTabPress = (route: Href) => {
@@ -172,9 +170,10 @@ export default function FloatingTabBar({
           <View style={styles.tabsContainer}>
             {tabs.map((tab, index) => {
               const isActive = activeTabIndex === index;
+              // Always use solid, contrasting colors - never undefined or transparent
               const iconColor = isActive 
-                ? theme.colors.primary 
-                : (theme.dark ? '#98989D' : '#000000');
+                ? (theme.colors.primary || '#007AFF')
+                : (theme.dark ? '#8E8E93' : '#8E8E93');
 
               return (
                 <React.Fragment key={index}>
@@ -195,8 +194,8 @@ export default function FloatingTabBar({
                     <Text
                       style={[
                         styles.tabLabel,
-                        { color: theme.dark ? '#98989D' : '#8E8E93' },
-                        isActive && { color: theme.colors.primary, fontWeight: '600' },
+                        { color: theme.dark ? '#8E8E93' : '#8E8E93' },
+                        isActive && { color: theme.colors.primary || '#007AFF', fontWeight: '600' },
                       ]}
                     >
                       {tab.label}
@@ -220,20 +219,17 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: 1000,
-    alignItems: 'center', // Center the content
+    alignItems: 'center',
   },
   container: {
     marginHorizontal: 20,
     alignSelf: 'center',
-    // width and marginBottom handled dynamically via props
   },
   blurContainer: {
     overflow: 'hidden',
-    // borderRadius and other styling applied dynamically
   },
   background: {
     ...StyleSheet.absoluteFillObject,
-    // Dynamic styling applied in component
   },
   indicator: {
     position: 'absolute',
@@ -241,20 +237,21 @@ const styles = StyleSheet.create({
     left: 2,
     bottom: 4,
     borderRadius: 27,
-    width: `${(100 / 2) - 1}%`, // Default for 2 tabs, will be overridden by dynamic styles
-    // Dynamic styling applied in component
+    width: `${(100 / 2) - 1}%`,
   },
   tabsContainer: {
     flexDirection: 'row',
     height: 60,
     alignItems: 'center',
     paddingHorizontal: 4,
+    justifyContent: 'space-evenly', // Changed from default to space-evenly for better distribution
   },
   tab: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 8,
+    paddingHorizontal: 4, // Reduced padding to prevent excessive spacing
   },
   tabContent: {
     alignItems: 'center',
@@ -271,6 +268,5 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: '500',
     marginTop: 2,
-    // Dynamic styling applied in component
   },
 });

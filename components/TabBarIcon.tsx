@@ -29,15 +29,18 @@ const iconMap: Record<string, keyof typeof MaterialIcons.glyphMap> = {
 };
 
 const TabBarIcon: React.FC<TabBarIconProps> = ({ name, color, size = 24 }) => {
+  // Ensure color is never undefined - fallback to a visible color
+  const resolvedColor = color || '#8E8E93';
+  
   // If SymbolView is available, use it
   if (SymbolView) {
     return (
       <SymbolView
         name={name}
-        tintColor={color}
+        tintColor={resolvedColor}
         size={size}
         resizeMode="scaleAspectFit"
-        style={styles.icon}
+        style={[styles.icon, { width: size, height: size }]}
       />
     );
   }
@@ -47,15 +50,14 @@ const TabBarIcon: React.FC<TabBarIconProps> = ({ name, color, size = 24 }) => {
   
   return (
     <View style={[styles.iconContainer, { width: size, height: size }]}>
-      <MaterialIcons name={materialIconName} size={size} color={color} />
+      <MaterialIcons name={materialIconName} size={size} color={resolvedColor} />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   icon: {
-    width: 24,
-    height: 24,
+    // Size applied dynamically
   },
   iconContainer: {
     justifyContent: 'center',
