@@ -132,11 +132,24 @@ export function TaskCard({ task, assignedChildren, onComplete, onDelete, showAct
       marginLeft: 8,
     },
     singleChildContainer: {
-      marginTop: 4,
+      marginTop: 8,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      backgroundColor: colors.background,
+      borderRadius: 8,
+      padding: 10,
+    },
+    singleChildInfo: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      flex: 1,
     },
     singleChildText: {
-      fontSize: 12,
-      color: colors.textSecondary,
+      fontSize: 14,
+      fontWeight: '500',
+      color: colors.text,
     },
   });
 
@@ -250,9 +263,32 @@ export function TaskCard({ task, assignedChildren, onComplete, onDelete, showAct
 
       {!isMultipleAssignment && assignedChildren && assignedChildren.length === 1 && (
         <View style={styles.singleChildContainer}>
-          <Text style={styles.singleChildText}>
-            {assignedChildren[0].avatar} {assignedChildren[0].name}
-          </Text>
+          <View style={styles.singleChildInfo}>
+            <Text style={styles.childAvatar}>{assignedChildren[0].avatar}</Text>
+            <Text style={styles.singleChildText}>{assignedChildren[0].name}</Text>
+          </View>
+          {showActions && !task.completed && onComplete && (
+            <TouchableOpacity
+              style={styles.completeButton}
+              onPress={() => onComplete(assignedChildren[0].id)}
+              activeOpacity={0.7}
+            >
+              <IconSymbol
+                ios_icon_name="circle"
+                android_material_icon_name="radio_button_unchecked"
+                size={24}
+                color={colors.textSecondary}
+              />
+            </TouchableOpacity>
+          )}
+          {task.completed && (
+            <IconSymbol
+              ios_icon_name="checkmark.circle.fill"
+              android_material_icon_name="check_circle"
+              size={24}
+              color={colors.primary}
+            />
+          )}
         </View>
       )}
     </View>
