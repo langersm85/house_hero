@@ -6,11 +6,11 @@ export default function TabLayout() {
   return (
     <NativeTabs>
       <NativeTabs.Trigger name="(home)">
-        <Icon sf="house.fill" />
+        <Icon sf={{ default: 'house', selected: 'house.fill' }} />
         <Label>Home</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="profile">
-        <Icon sf="person.fill" />
+        <Icon sf={{ default: 'person', selected: 'person.fill' }} />
         <Label>Profile</Label>
       </NativeTabs.Trigger>
     </NativeTabs>
