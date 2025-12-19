@@ -15,7 +15,7 @@ import { Child } from '@/types/chore.types';
 
 export default function HomeScreen() {
   const colors = useThemeColors();
-  const { children, tasks, rewards, completeTask, deleteTask, resetTask, addTask, deleteReward, addReward, redeemReward, addChild, updateChild, deleteChild, isLoading } = useChores();
+  const { children, tasks, rewards, completeTask, deleteTask, resetTask, addTask, addTaskTemplate, deleteReward, addReward, redeemReward, addChild, updateChild, deleteChild, isLoading } = useChores();
   const [showAddTask, setShowAddTask] = useState(false);
   const [showAddReward, setShowAddReward] = useState(false);
   const [showAddChild, setShowAddChild] = useState(false);
@@ -372,7 +372,7 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Chore Tracker</Text>
+          <Text style={styles.headerTitle}>House Hero</Text>
           <Text style={styles.headerSubtitle}>Earn points by completing tasks!</Text>
         </View>
 
@@ -591,6 +591,7 @@ export default function HomeScreen() {
         visible={showAddTask}
         onClose={() => setShowAddTask(false)}
         onAdd={addTask}
+        onAddTemplate={addTaskTemplate}
         childrenList={children}
       />
 

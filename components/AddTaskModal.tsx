@@ -9,10 +9,11 @@ interface AddTaskModalProps {
   visible: boolean;
   onClose: () => void;
   onAdd: (name: string, points: number, description?: string, assignedTo?: string | string[]) => void;
+  onAddTemplate?: (name: string, points: number, description?: string) => void;
   childrenList: Child[];
 }
 
-export function AddTaskModal({ visible, onClose, onAdd, childrenList }: AddTaskModalProps) {
+export function AddTaskModal({ visible, onClose, onAdd, onAddTemplate, childrenList }: AddTaskModalProps) {
   const colors = useThemeColors();
   const [name, setName] = useState('');
   const [points, setPoints] = useState('');
@@ -30,7 +31,15 @@ export function AddTaskModal({ visible, onClose, onAdd, childrenList }: AddTaskM
         assignedTo = selectedChildren.length === 1 ? selectedChildren[0] : selectedChildren;
       }
       
+      // Add the task
       onAdd(name.trim(), parseInt(points), description.trim() || undefined, assignedTo);
+      
+      // Automatically save as template if onAddTemplate is provided
+      if (onAddTemplate) {
+        onAddTemplate(name.trim(), parseInt(points), description.trim() || undefined);
+        console.log('Task automatically saved as template:', name.trim());
+      }
+      
       setName('');
       setPoints('');
       setDescription('');
@@ -210,6 +219,21 @@ export function AddTaskModal({ visible, onClose, onAdd, childrenList }: AddTaskM
     disabledButton: {
       opacity: 0.5,
     },
+    infoBox: {
+      backgroundColor: colors.highlight,
+      borderRadius: 8,
+      padding: 12,
+      marginBottom: 16,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+    },
+    infoText: {
+      flex: 1,
+      fontSize: 13,
+      color: colors.text,
+      lineHeight: 18,
+    },
   });
 
   return (
@@ -234,6 +258,20 @@ export function AddTaskModal({ visible, onClose, onAdd, childrenList }: AddTaskM
           </View>
 
           <ScrollView style={styles.form} showsVerticalScrollIndicator={false}>
+            {onAddTemplate && (
+              <View style={styles.infoBox}>
+                <IconSymbol
+                  ios_icon_name="info.circle.fill"
+                  android_material_icon_name="info"
+                  size={20}
+                  color={colors.primary}
+                />
+                <Text style={styles.infoText}>
+                  This task will be automatically saved as a template for future use.
+                </Text>
+              </View>
+            )}
+
             <Text style={styles.label}>Task Name *</Text>
             <TextInput
               style={styles.input}

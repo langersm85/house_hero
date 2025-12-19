@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Modal, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Modal, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { useThemeColors } from '@/styles/commonStyles';
 import { IconSymbol } from './IconSymbol';
 
@@ -129,7 +129,10 @@ export function AddTaskTemplateModal({ visible, onClose, onAdd }: AddTaskTemplat
       transparent={true}
       onRequestClose={onClose}
     >
-      <View style={styles.modalOverlay}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.modalOverlay}
+      >
         <View style={styles.modalContent}>
           <View style={styles.header}>
             <Text style={styles.title}>Add Task Template</Text>
@@ -155,7 +158,7 @@ export function AddTaskTemplateModal({ visible, onClose, onAdd }: AddTaskTemplat
             </Text>
           </View>
 
-          <ScrollView style={styles.form} showsVerticalScrollIndicator={false}>
+          <ScrollView style={styles.form} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
             <Text style={styles.label}>Task Name *</Text>
             <TextInput
               style={styles.input}
@@ -205,7 +208,7 @@ export function AddTaskTemplateModal({ visible, onClose, onAdd }: AddTaskTemplat
             </TouchableOpacity>
           </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
