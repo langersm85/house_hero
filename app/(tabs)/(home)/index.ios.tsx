@@ -300,7 +300,7 @@ export default function HomeScreen() {
                     <React.Fragment key={index}>
                       <TaskCard
                         task={task}
-                        children={taskChildren}
+                        assignedChildren={taskChildren}
                         onComplete={(childId) => handleCompleteTask(task.id, childId)}
                         onDelete={() => handleDeleteTask(task.id)}
                       />
@@ -319,7 +319,7 @@ export default function HomeScreen() {
                     <React.Fragment key={index}>
                       <TaskCard
                         task={task}
-                        children={taskChildren}
+                        assignedChildren={taskChildren}
                         showActions={false}
                       />
                     </React.Fragment>

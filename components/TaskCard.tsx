@@ -7,13 +7,13 @@ import { IconSymbol } from './IconSymbol';
 
 interface TaskCardProps {
   task: Task;
-  children?: Child[];
+  assignedChildren?: Child[];
   onComplete?: (childId: string) => void;
   onDelete?: () => void;
   showActions?: boolean;
 }
 
-export function TaskCard({ task, children, onComplete, onDelete, showActions = true }: TaskCardProps) {
+export function TaskCard({ task, assignedChildren, onComplete, onDelete, showActions = true }: TaskCardProps) {
   const colors = useThemeColors();
 
   const isMultipleAssignment = Array.isArray(task.assignedTo);
@@ -192,11 +192,11 @@ export function TaskCard({ task, children, onComplete, onDelete, showActions = t
         )}
       </View>
 
-      {isMultipleAssignment && children && children.length > 0 && (
+      {isMultipleAssignment && assignedChildren && assignedChildren.length > 0 && (
         <View style={styles.assignedContainer}>
           <Text style={styles.assignedLabel}>Assigned to:</Text>
           <View style={styles.childrenList}>
-            {children.map((child, index) => {
+            {assignedChildren.map((child, index) => {
               const isCompleted = completedBy.includes(child.id);
               return (
                 <React.Fragment key={index}>
@@ -248,10 +248,10 @@ export function TaskCard({ task, children, onComplete, onDelete, showActions = t
         </View>
       )}
 
-      {!isMultipleAssignment && children && children.length === 1 && (
+      {!isMultipleAssignment && assignedChildren && assignedChildren.length === 1 && (
         <View style={styles.singleChildContainer}>
           <Text style={styles.singleChildText}>
-            {children[0].avatar} {children[0].name}
+            {assignedChildren[0].avatar} {assignedChildren[0].name}
           </Text>
         </View>
       )}
