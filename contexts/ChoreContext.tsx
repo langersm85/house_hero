@@ -8,6 +8,7 @@ interface ChoreContextType {
   tasks: Task[];
   rewards: Reward[];
   addChild: (name: string, avatar: string) => void;
+  updateChild: (id: string, name: string, avatar: string) => void;
   updateChildPoints: (childId: string, points: number) => void;
   deleteChild: (childId: string) => void;
   addTask: (name: string, points: number, description?: string, assignedTo?: string) => void;
@@ -114,6 +115,14 @@ export function ChoreProvider({ children: reactChildren }: { children: ReactNode
     setChildren(prev => [...prev, newChild]);
   };
 
+  const updateChild = (id: string, name: string, avatar: string) => {
+    setChildren(prev =>
+      prev.map(child =>
+        child.id === id ? { ...child, name, avatar } : child
+      )
+    );
+  };
+
   const updateChildPoints = (childId: string, points: number) => {
     setChildren(prev =>
       prev.map(child =>
@@ -217,6 +226,7 @@ export function ChoreProvider({ children: reactChildren }: { children: ReactNode
         tasks,
         rewards,
         addChild,
+        updateChild,
         updateChildPoints,
         deleteChild,
         addTask,

@@ -8,11 +8,12 @@ import { IconSymbol } from './IconSymbol';
 interface ChildCardProps {
   child: Child;
   onPress?: () => void;
+  onEdit?: () => void;
   onDelete?: () => void;
-  showDelete?: boolean;
+  showActions?: boolean;
 }
 
-export function ChildCard({ child, onPress, onDelete, showDelete = false }: ChildCardProps) {
+export function ChildCard({ child, onPress, onEdit, onDelete, showActions = false }: ChildCardProps) {
   const colors = useThemeColors();
 
   const styles = StyleSheet.create({
@@ -62,7 +63,7 @@ export function ChildCard({ child, onPress, onDelete, showDelete = false }: Chil
       alignItems: 'center',
       gap: 8,
     },
-    deleteButton: {
+    actionButton: {
       padding: 4,
     },
   });
@@ -90,9 +91,26 @@ export function ChildCard({ child, onPress, onDelete, showDelete = false }: Chil
         </View>
       </View>
       <View style={styles.actionsContainer}>
-        {showDelete && onDelete && (
+        {showActions && onEdit && (
           <TouchableOpacity
-            style={styles.deleteButton}
+            style={styles.actionButton}
+            onPress={(e) => {
+              e.stopPropagation();
+              onEdit();
+            }}
+            activeOpacity={0.7}
+          >
+            <IconSymbol
+              ios_icon_name="pencil"
+              android_material_icon_name="edit"
+              size={20}
+              color={colors.primary}
+            />
+          </TouchableOpacity>
+        )}
+        {showActions && onDelete && (
+          <TouchableOpacity
+            style={styles.actionButton}
             onPress={(e) => {
               e.stopPropagation();
               onDelete();
@@ -107,7 +125,7 @@ export function ChildCard({ child, onPress, onDelete, showDelete = false }: Chil
             />
           </TouchableOpacity>
         )}
-        {onPress && (
+        {onPress && !showActions && (
           <IconSymbol
             ios_icon_name="chevron.right"
             android_material_icon_name="chevron_right"

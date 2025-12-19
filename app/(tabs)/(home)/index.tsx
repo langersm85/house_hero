@@ -9,14 +9,18 @@ import { RewardCard } from '@/components/RewardCard';
 import { AddTaskModal } from '@/components/AddTaskModal';
 import { AddRewardModal } from '@/components/AddRewardModal';
 import { AddChildModal } from '@/components/AddChildModal';
+import { EditChildModal } from '@/components/EditChildModal';
 import { IconSymbol } from '@/components/IconSymbol';
+import { Child } from '@/types/chore.types';
 
 export default function HomeScreen() {
   const colors = useThemeColors();
-  const { children, tasks, rewards, completeTask, deleteTask, addTask, deleteReward, addReward, redeemReward, addChild, deleteChild, isLoading } = useChores();
+  const { children, tasks, rewards, completeTask, deleteTask, addTask, deleteReward, addReward, redeemReward, addChild, updateChild, deleteChild, isLoading } = useChores();
   const [showAddTask, setShowAddTask] = useState(false);
   const [showAddReward, setShowAddReward] = useState(false);
   const [showAddChild, setShowAddChild] = useState(false);
+  const [showEditChild, setShowEditChild] = useState(false);
+  const [editingChild, setEditingChild] = useState<Child | null>(null);
   const [selectedTab, setSelectedTab] = useState<'tasks' | 'rewards'>('tasks');
 
   const activeTasks = tasks.filter(t => !t.completed);
@@ -61,6 +65,17 @@ export default function HomeScreen() {
         },
       ]
     );
+  };
+
+  const handleEditChild = (child: Child) => {
+    setEditingChild(child);
+    setShowEditChild(true);
+  };
+
+  const handleUpdateChild = (id: string, name: string, avatar: string) => {
+    updateChild(id, name, avatar);
+    setShowEditChild(false);
+    setEditingChild(null);
   };
 
   const handleDeleteChild = (childId: string) => {
@@ -320,7 +335,8 @@ export default function HomeScreen() {
               <React.Fragment key={index}>
                 <ChildCard 
                   child={child} 
-                  showDelete={true}
+                  showActions={true}
+                  onEdit={() => handleEditChild(child)}
                   onDelete={() => handleDeleteChild(child.id)}
                 />
               </React.Fragment>
@@ -499,6 +515,16 @@ export default function HomeScreen() {
         visible={showAddChild}
         onClose={() => setShowAddChild(false)}
         onAdd={addChild}
+      />
+
+      <EditChildModal
+        visible={showEditChild}
+        onClose={() => {
+          setShowEditChild(false);
+          setEditingChild(null);
+        }}
+        onUpdate={handleUpdateChild}
+        child={editingChild}
       />
     </View>
   );
