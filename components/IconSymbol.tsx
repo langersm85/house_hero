@@ -1,3 +1,4 @@
+
 // This file is a fallback for using MaterialIcons on Android and web.
 
 import React from "react";
@@ -7,6 +8,7 @@ import {
   StyleProp,
   TextStyle,
   ViewStyle,
+  View,
 } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
@@ -30,11 +32,12 @@ export function IconSymbol({
   weight?: SymbolWeight;
 }) {
   return (
-    <MaterialIcons
-      color={color}
-      size={size}
-      name={android_material_icon_name}
-      style={style as StyleProp<TextStyle>}
-    />
+    <View style={[{ width: size, height: size, justifyContent: 'center', alignItems: 'center' }, style]}>
+      <MaterialIcons
+        color={color}
+        size={size}
+        name={android_material_icon_name}
+      />
+    </View>
   );
 }

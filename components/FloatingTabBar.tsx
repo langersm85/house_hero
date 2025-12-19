@@ -172,6 +172,9 @@ export default function FloatingTabBar({
           <View style={styles.tabsContainer}>
             {tabs.map((tab, index) => {
               const isActive = activeTabIndex === index;
+              const iconColor = isActive 
+                ? theme.colors.primary 
+                : (theme.dark ? '#98989D' : '#000000');
 
               return (
                 <React.Fragment key={index}>
@@ -181,12 +184,14 @@ export default function FloatingTabBar({
                   activeOpacity={0.7}
                 >
                   <View style={styles.tabContent}>
-                    <IconSymbol
-                      android_material_icon_name={tab.android_material_icon_name}
-                      ios_icon_name={tab.ios_icon_name}
-                      size={24}
-                      color={isActive ? theme.colors.primary : (theme.dark ? '#98989D' : '#000000')}
-                    />
+                    <View style={styles.iconContainer}>
+                      <IconSymbol
+                        android_material_icon_name={tab.android_material_icon_name}
+                        ios_icon_name={tab.ios_icon_name}
+                        size={24}
+                        color={iconColor}
+                      />
+                    </View>
                     <Text
                       style={[
                         styles.tabLabel,
@@ -255,6 +260,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 2,
+  },
+  iconContainer: {
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   tabLabel: {
     fontSize: 9,
