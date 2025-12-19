@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { ScrollView, StyleSheet, View, Text, TouchableOpacity, Alert } from 'react-native';
+import { ScrollView, StyleSheet, View, Text, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { colors } from '@/styles/commonStyles';
 import { useChores } from '@/contexts/ChoreContext';
 import { ChildCard } from '@/components/ChildCard';
@@ -8,12 +8,14 @@ import { TaskCard } from '@/components/TaskCard';
 import { RewardCard } from '@/components/RewardCard';
 import { AddTaskModal } from '@/components/AddTaskModal';
 import { AddRewardModal } from '@/components/AddRewardModal';
+import { AddChildModal } from '@/components/AddChildModal';
 import { IconSymbol } from '@/components/IconSymbol';
 
 export default function HomeScreen() {
-  const { children, tasks, rewards, completeTask, deleteTask, addTask, deleteReward, addReward, redeemReward } = useChores();
+  const { children, tasks, rewards, completeTask, deleteTask, addTask, deleteReward, addReward, redeemReward, addChild, deleteChild, isLoading } = useChores();
   const [showAddTask, setShowAddTask] = useState(false);
   const [showAddReward, setShowAddReward] = useState(false);
+  const [showAddChild, setShowAddChild] = useState(false);
   const [selectedTab, setSelectedTab] = useState<'tasks' | 'rewards'>('tasks');
 
   const activeTasks = tasks.filter(t => !t.completed);
@@ -55,6 +57,27 @@ export default function HomeScreen() {
           text: 'Delete',
           style: 'destructive',
           onPress: () => deleteTask(taskId),
+        },
+      ]
+    );
+  };
+
+  const handleDeleteChild = (childId: string) => {
+    const child = children.find(c => c.id === childId);
+    if (!child) {
+      console.log('Child not found');
+      return;
+    }
+
+    Alert.alert(
+      'Delete Child',
+      `Are you sure you want to remove ${child.name}? Their tasks will be unassigned.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => deleteChild(childId),
         },
       ]
     );
@@ -107,6 +130,14 @@ export default function HomeScreen() {
     );
   };
 
+  if (isLoading) {
+    return (
+      <View style={[styles.container, styles.loadingContainer]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <ScrollView
@@ -120,12 +151,44 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Children</Text>
-          {children.map((child, index) => (
-            <React.Fragment key={index}>
-              <ChildCard child={child} />
-            </React.Fragment>
-          ))}
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Children</Text>
+            <TouchableOpacity
+              style={styles.addButton}
+              onPress={() => setShowAddChild(true)}
+              activeOpacity={0.7}
+            >
+              <IconSymbol
+                ios_icon_name="plus"
+                android_material_icon_name="add"
+                size={20}
+                color={colors.card}
+              />
+              <Text style={styles.addButtonText}>Add Child</Text>
+            </TouchableOpacity>
+          </View>
+          {children.length === 0 ? (
+            <View style={styles.emptyState}>
+              <IconSymbol
+                ios_icon_name="person.2"
+                android_material_icon_name="people"
+                size={48}
+                color={colors.textSecondary}
+              />
+              <Text style={styles.emptyStateText}>No children yet</Text>
+              <Text style={styles.emptyStateSubtext}>Add a child to get started!</Text>
+            </View>
+          ) : (
+            children.map((child, index) => (
+              <React.Fragment key={index}>
+                <ChildCard 
+                  child={child} 
+                  showDelete={true}
+                  onDelete={() => handleDeleteChild(child.id)}
+                />
+              </React.Fragment>
+            ))
+          )}
         </View>
 
         <View style={styles.tabContainer}>
@@ -294,6 +357,12 @@ export default function HomeScreen() {
         onClose={() => setShowAddReward(false)}
         onAdd={addReward}
       />
+
+      <AddChildModal
+        visible={showAddChild}
+        onClose={() => setShowAddChild(false)}
+        onAdd={addChild}
+      />
     </View>
   );
 }
@@ -426,5 +495,10 @@ const styles = StyleSheet.create({
   childRedeemTextActive: {
     color: colors.primary,
     fontWeight: '600',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
