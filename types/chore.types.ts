@@ -15,6 +15,7 @@ export interface Task {
   completed: boolean;
   completedAt?: Date;
   completedBy?: string[]; // Track which children have completed the task
+  isTemplate?: boolean; // True if this is a reusable task template
 }
 
 export interface Reward {

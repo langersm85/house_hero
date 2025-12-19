@@ -6,14 +6,20 @@ import { Child, Task, Reward } from '@/types/chore.types';
 interface ChoreContextType {
   children: Child[];
   tasks: Task[];
+  taskTemplates: Task[];
   rewards: Reward[];
   addChild: (name: string, avatar: string) => void;
   updateChild: (id: string, name: string, avatar: string) => void;
   updateChildPoints: (childId: string, points: number) => void;
   deleteChild: (childId: string) => void;
   addTask: (name: string, points: number, description?: string, assignedTo?: string | string[]) => void;
+  addTaskTemplate: (name: string, points: number, description?: string) => void;
+  createTaskFromTemplate: (templateId: string, assignedTo?: string | string[]) => void;
+  updateTaskTemplate: (id: string, name: string, points: number, description?: string) => void;
+  deleteTaskTemplate: (templateId: string) => void;
   completeTask: (taskId: string, childId: string) => void;
   deleteTask: (taskId: string) => void;
+  resetTask: (taskId: string) => void;
   addReward: (name: string, pointsRequired: number, type: Reward['type'], description?: string) => void;
   deleteReward: (rewardId: string) => void;
   redeemReward: (rewardId: string, childId: string) => boolean;
@@ -25,20 +31,23 @@ const ChoreContext = createContext<ChoreContextType | undefined>(undefined);
 const STORAGE_KEYS = {
   CHILDREN: '@chore_tracker_children',
   TASKS: '@chore_tracker_tasks',
+  TASK_TEMPLATES: '@chore_tracker_task_templates',
   REWARDS: '@chore_tracker_rewards',
 };
 
 export function ChoreProvider({ children: reactChildren }: { children: ReactNode }) {
   const [children, setChildren] = useState<Child[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [taskTemplates, setTaskTemplates] = useState<Task[]>([]);
   const [rewards, setRewards] = useState<Reward[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const loadData = async () => {
     try {
-      const [childrenData, tasksData, rewardsData] = await Promise.all([
+      const [childrenData, tasksData, taskTemplatesData, rewardsData] = await Promise.all([
         AsyncStorage.getItem(STORAGE_KEYS.CHILDREN),
         AsyncStorage.getItem(STORAGE_KEYS.TASKS),
+        AsyncStorage.getItem(STORAGE_KEYS.TASK_TEMPLATES),
         AsyncStorage.getItem(STORAGE_KEYS.REWARDS),
       ]);
 
@@ -64,6 +73,22 @@ export function ChoreProvider({ children: reactChildren }: { children: ReactNode
         ]);
       }
 
+      if (taskTemplatesData) {
+        setTaskTemplates(JSON.parse(taskTemplatesData));
+      } else {
+        // Create default task templates from common chores
+        setTaskTemplates([
+          { id: 't1', name: 'Brush Teeth', points: 1, description: 'Morning and evening', completed: false, isTemplate: true },
+          { id: 't2', name: 'Do Dishes', points: 3, description: 'Wash and dry all dishes', completed: false, isTemplate: true },
+          { id: 't3', name: 'Weeding Garden', points: 5, description: 'Remove weeds from front yard', completed: false, isTemplate: true },
+          { id: 't4', name: 'Clean Room', points: 4, description: 'Tidy up and vacuum', completed: false, isTemplate: true },
+          { id: 't5', name: 'Take Out Trash', points: 2, description: 'Empty all bins', completed: false, isTemplate: true },
+          { id: 't6', name: 'Make Bed', points: 1, description: 'Make your bed neatly', completed: false, isTemplate: true },
+          { id: 't7', name: 'Homework', points: 3, description: 'Complete all homework assignments', completed: false, isTemplate: true },
+          { id: 't8', name: 'Feed Pet', points: 2, description: 'Feed and water the pet', completed: false, isTemplate: true },
+        ]);
+      }
+
       if (rewardsData) {
         setRewards(JSON.parse(rewardsData));
       } else {
@@ -86,12 +111,13 @@ export function ChoreProvider({ children: reactChildren }: { children: ReactNode
       await Promise.all([
         AsyncStorage.setItem(STORAGE_KEYS.CHILDREN, JSON.stringify(children)),
         AsyncStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(tasks)),
+        AsyncStorage.setItem(STORAGE_KEYS.TASK_TEMPLATES, JSON.stringify(taskTemplates)),
         AsyncStorage.setItem(STORAGE_KEYS.REWARDS, JSON.stringify(rewards)),
       ]);
     } catch (error) {
       console.log('Error saving data:', error);
     }
-  }, [children, tasks, rewards]);
+  }, [children, tasks, taskTemplates, rewards]);
 
   // Load data from AsyncStorage on mount
   useEffect(() => {
@@ -103,7 +129,7 @@ export function ChoreProvider({ children: reactChildren }: { children: ReactNode
     if (!isLoading) {
       saveData();
     }
-  }, [children, tasks, rewards, isLoading, saveData]);
+  }, [children, tasks, taskTemplates, rewards, isLoading, saveData]);
 
   const addChild = (name: string, avatar: string) => {
     const newChild: Child = {
@@ -154,8 +180,53 @@ export function ChoreProvider({ children: reactChildren }: { children: ReactNode
       assignedTo,
       completed: false,
       completedBy: [],
+      isTemplate: false,
     };
     setTasks(prev => [...prev, newTask]);
+  };
+
+  const addTaskTemplate = (name: string, points: number, description?: string) => {
+    const newTemplate: Task = {
+      id: `t${Date.now()}`,
+      name,
+      points,
+      description,
+      completed: false,
+      isTemplate: true,
+    };
+    setTaskTemplates(prev => [...prev, newTemplate]);
+  };
+
+  const createTaskFromTemplate = (templateId: string, assignedTo?: string | string[]) => {
+    const template = taskTemplates.find(t => t.id === templateId);
+    if (!template) {
+      console.log('Template not found');
+      return;
+    }
+
+    const newTask: Task = {
+      id: Date.now().toString(),
+      name: template.name,
+      points: template.points,
+      description: template.description,
+      assignedTo,
+      completed: false,
+      completedBy: [],
+      isTemplate: false,
+    };
+    setTasks(prev => [...prev, newTask]);
+  };
+
+  const updateTaskTemplate = (id: string, name: string, points: number, description?: string) => {
+    setTaskTemplates(prev =>
+      prev.map(template =>
+        template.id === id ? { ...template, name, points, description } : template
+      )
+    );
+  };
+
+  const deleteTaskTemplate = (templateId: string) => {
+    setTaskTemplates(prev => prev.filter(t => t.id !== templateId));
   };
 
   const completeTask = (taskId: string, childId: string) => {
@@ -230,6 +301,16 @@ export function ChoreProvider({ children: reactChildren }: { children: ReactNode
     setTasks(prev => prev.filter(t => t.id !== taskId));
   };
 
+  const resetTask = (taskId: string) => {
+    setTasks(prev =>
+      prev.map(t =>
+        t.id === taskId
+          ? { ...t, completed: false, completedAt: undefined, completedBy: [] }
+          : t
+      )
+    );
+  };
+
   const addReward = (name: string, pointsRequired: number, type: Reward['type'], description?: string) => {
     const newReward: Reward = {
       id: Date.now().toString(),
@@ -275,14 +356,20 @@ export function ChoreProvider({ children: reactChildren }: { children: ReactNode
       value={{
         children,
         tasks,
+        taskTemplates,
         rewards,
         addChild,
         updateChild,
         updateChildPoints,
         deleteChild,
         addTask,
+        addTaskTemplate,
+        createTaskFromTemplate,
+        updateTaskTemplate,
+        deleteTaskTemplate,
         completeTask,
         deleteTask,
+        resetTask,
         addReward,
         deleteReward,
         redeemReward,

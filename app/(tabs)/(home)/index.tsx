@@ -15,7 +15,7 @@ import { Child } from '@/types/chore.types';
 
 export default function HomeScreen() {
   const colors = useThemeColors();
-  const { children, tasks, rewards, completeTask, deleteTask, addTask, deleteReward, addReward, redeemReward, addChild, updateChild, deleteChild, isLoading } = useChores();
+  const { children, tasks, rewards, completeTask, deleteTask, resetTask, addTask, deleteReward, addReward, redeemReward, addChild, updateChild, deleteChild, isLoading } = useChores();
   const [showAddTask, setShowAddTask] = useState(false);
   const [showAddReward, setShowAddReward] = useState(false);
   const [showAddChild, setShowAddChild] = useState(false);
@@ -97,6 +97,26 @@ export default function HomeScreen() {
           text: 'Delete',
           style: 'destructive',
           onPress: () => deleteTask(taskId),
+        },
+      ]
+    );
+  };
+
+  const handleResetTask = (taskId: string) => {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) {
+      console.log('Task not found');
+      return;
+    }
+
+    Alert.alert(
+      'Reset Task',
+      `Reset "${task.name}" to active status? This will not affect points already earned.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Reset',
+          onPress: () => resetTask(taskId),
         },
       ]
     );
@@ -315,6 +335,25 @@ export default function HomeScreen() {
       justifyContent: 'center',
       alignItems: 'center',
     },
+    completedTaskWrapper: {
+      marginBottom: 12,
+    },
+    resetButton: {
+      backgroundColor: colors.secondary,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+      paddingVertical: 10,
+      paddingHorizontal: 16,
+      borderRadius: 8,
+      marginTop: 8,
+    },
+    resetButtonText: {
+      color: colors.card,
+      fontSize: 14,
+      fontWeight: '600',
+    },
   });
 
   if (isLoading) {
@@ -454,11 +493,26 @@ export default function HomeScreen() {
                   const taskChildren = getTaskChildren(task);
                   return (
                     <React.Fragment key={index}>
-                      <TaskCard
-                        task={task}
-                        assignedChildren={taskChildren}
-                        showActions={false}
-                      />
+                      <View style={styles.completedTaskWrapper}>
+                        <TaskCard
+                          task={task}
+                          assignedChildren={taskChildren}
+                          showActions={false}
+                        />
+                        <TouchableOpacity
+                          style={styles.resetButton}
+                          onPress={() => handleResetTask(task.id)}
+                          activeOpacity={0.7}
+                        >
+                          <IconSymbol
+                            ios_icon_name="arrow.counterclockwise"
+                            android_material_icon_name="refresh"
+                            size={18}
+                            color={colors.card}
+                          />
+                          <Text style={styles.resetButtonText}>Reset Task</Text>
+                        </TouchableOpacity>
+                      </View>
                     </React.Fragment>
                   );
                 })}
