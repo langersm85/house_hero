@@ -1,33 +1,505 @@
-import React from "react";
-import { FlatList, StyleSheet, View } from "react-native";
-import { useTheme } from "@react-navigation/native";
-import { modalDemos } from "@/components/homeData";
-import { DemoCard } from "@/components/DemoCard";
+
+import React, { useState } from 'react';
+import { ScrollView, StyleSheet, View, Text, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { useThemeColors } from '@/styles/commonStyles';
+import { useChores } from '@/contexts/ChoreContext';
+import { ChildCard } from '@/components/ChildCard';
+import { TaskCard } from '@/components/TaskCard';
+import { RewardCard } from '@/components/RewardCard';
+import { AddTaskModal } from '@/components/AddTaskModal';
+import { AddRewardModal } from '@/components/AddRewardModal';
+import { AddChildModal } from '@/components/AddChildModal';
+import { IconSymbol } from '@/components/IconSymbol';
 
 export default function HomeScreen() {
-  const theme = useTheme();
+  const colors = useThemeColors();
+  const { children, tasks, rewards, completeTask, deleteTask, addTask, deleteReward, addReward, redeemReward, addChild, deleteChild, isLoading } = useChores();
+  const [showAddTask, setShowAddTask] = useState(false);
+  const [showAddReward, setShowAddReward] = useState(false);
+  const [showAddChild, setShowAddChild] = useState(false);
+  const [selectedTab, setSelectedTab] = useState<'tasks' | 'rewards'>('tasks');
+
+  const activeTasks = tasks.filter(t => !t.completed);
+  const completedTasks = tasks.filter(t => t.completed);
+
+  const handleCompleteTask = (taskId: string) => {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task || !task.assignedTo) {
+      Alert.alert('Error', 'This task is not assigned to anyone');
+      return;
+    }
+
+    const child = children.find(c => c.id === task.assignedTo);
+    if (!child) {
+      Alert.alert('Error', 'Child not found');
+      return;
+    }
+
+    Alert.alert(
+      'Complete Task',
+      `Mark "${task.name}" as complete for ${child.name}? They will earn ${task.points} points.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Complete',
+          onPress: () => completeTask(taskId, child.id),
+        },
+      ]
+    );
+  };
+
+  const handleDeleteTask = (taskId: string) => {
+    Alert.alert(
+      'Delete Task',
+      'Are you sure you want to delete this task?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => deleteTask(taskId),
+        },
+      ]
+    );
+  };
+
+  const handleDeleteChild = (childId: string) => {
+    const child = children.find(c => c.id === childId);
+    if (!child) {
+      console.log('Child not found');
+      return;
+    }
+
+    Alert.alert(
+      'Delete Child',
+      `Are you sure you want to remove ${child.name}? Their tasks will be unassigned.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => deleteChild(childId),
+        },
+      ]
+    );
+  };
+
+  const handleRedeemReward = (rewardId: string, childId: string) => {
+    const reward = rewards.find(r => r.id === rewardId);
+    const child = children.find(c => c.id === childId);
+
+    if (!reward || !child) {
+      console.log('Reward or child not found');
+      return;
+    }
+
+    if (child.points < reward.pointsRequired) {
+      Alert.alert('Not Enough Points', `${child.name} needs ${reward.pointsRequired - child.points} more points to redeem this reward.`);
+      return;
+    }
+
+    Alert.alert(
+      'Redeem Reward',
+      `Redeem "${reward.name}" for ${child.name}? This will cost ${reward.pointsRequired} points.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Redeem',
+          onPress: () => {
+            const success = redeemReward(rewardId, childId);
+            if (success) {
+              Alert.alert('Success!', `${child.name} has redeemed ${reward.name}!`);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleDeleteReward = (rewardId: string) => {
+    Alert.alert(
+      'Delete Reward',
+      'Are you sure you want to delete this reward?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => deleteReward(rewardId),
+        },
+      ]
+    );
+  };
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    scrollView: {
+      flex: 1,
+    },
+    contentContainer: {
+      paddingTop: 48,
+      paddingHorizontal: 16,
+      paddingBottom: 120,
+    },
+    header: {
+      marginBottom: 24,
+    },
+    headerTitle: {
+      fontSize: 32,
+      fontWeight: '800',
+      color: colors.text,
+      marginBottom: 4,
+    },
+    headerSubtitle: {
+      fontSize: 16,
+      color: colors.textSecondary,
+    },
+    section: {
+      marginBottom: 24,
+    },
+    sectionHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 12,
+    },
+    sectionTitle: {
+      fontSize: 20,
+      fontWeight: '700',
+      color: colors.text,
+      marginBottom: 12,
+    },
+    addButton: {
+      backgroundColor: colors.secondary,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderRadius: 8,
+    },
+    addButtonText: {
+      color: colors.card,
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    tabContainer: {
+      flexDirection: 'row',
+      backgroundColor: colors.card,
+      borderRadius: 12,
+      padding: 4,
+      marginBottom: 20,
+    },
+    tab: {
+      flex: 1,
+      paddingVertical: 12,
+      alignItems: 'center',
+      borderRadius: 8,
+    },
+    activeTab: {
+      backgroundColor: colors.primary,
+    },
+    tabText: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: colors.textSecondary,
+    },
+    activeTabText: {
+      color: colors.card,
+    },
+    emptyState: {
+      alignItems: 'center',
+      paddingVertical: 40,
+    },
+    emptyStateText: {
+      fontSize: 18,
+      fontWeight: '600',
+      color: colors.text,
+      marginTop: 12,
+    },
+    emptyStateSubtext: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      marginTop: 4,
+    },
+    rewardItem: {
+      marginBottom: 12,
+    },
+    redeemContainer: {
+      flexDirection: 'row',
+      gap: 8,
+      marginTop: 8,
+      paddingHorizontal: 4,
+    },
+    childRedeemButton: {
+      flex: 1,
+      backgroundColor: colors.card,
+      borderRadius: 8,
+      padding: 10,
+      alignItems: 'center',
+      borderWidth: 2,
+      borderColor: colors.textSecondary,
+    },
+    childRedeemButtonActive: {
+      borderColor: colors.primary,
+      backgroundColor: colors.highlight,
+    },
+    childRedeemAvatar: {
+      fontSize: 20,
+      marginBottom: 4,
+    },
+    childRedeemText: {
+      fontSize: 12,
+      fontWeight: '500',
+      color: colors.textSecondary,
+    },
+    childRedeemTextActive: {
+      color: colors.primary,
+      fontWeight: '600',
+    },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <View style={[styles.container, styles.loadingContainer]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <FlatList
-        data={modalDemos}
-        renderItem={({ item }) => <DemoCard item={item} />}
-        keyExtractor={(item) => item.route}
-        contentContainerStyle={styles.listContainer}
-        contentInsetAdjustmentBehavior="automatic"
+    <View style={styles.container}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Chore Tracker</Text>
+          <Text style={styles.headerSubtitle}>Earn points by completing tasks!</Text>
+        </View>
+
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Children</Text>
+            <TouchableOpacity
+              style={styles.addButton}
+              onPress={() => setShowAddChild(true)}
+              activeOpacity={0.7}
+            >
+              <IconSymbol
+                ios_icon_name="plus"
+                android_material_icon_name="add"
+                size={20}
+                color={colors.card}
+              />
+              <Text style={styles.addButtonText}>Add Child</Text>
+            </TouchableOpacity>
+          </View>
+          {children.length === 0 ? (
+            <View style={styles.emptyState}>
+              <IconSymbol
+                ios_icon_name="person.2"
+                android_material_icon_name="people"
+                size={48}
+                color={colors.textSecondary}
+              />
+              <Text style={styles.emptyStateText}>No children yet</Text>
+              <Text style={styles.emptyStateSubtext}>Add a child to get started!</Text>
+            </View>
+          ) : (
+            children.map((child, index) => (
+              <React.Fragment key={index}>
+                <ChildCard 
+                  child={child} 
+                  showDelete={true}
+                  onDelete={() => handleDeleteChild(child.id)}
+                />
+              </React.Fragment>
+            ))
+          )}
+        </View>
+
+        <View style={styles.tabContainer}>
+          <TouchableOpacity
+            style={[styles.tab, selectedTab === 'tasks' && styles.activeTab]}
+            onPress={() => setSelectedTab('tasks')}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.tabText, selectedTab === 'tasks' && styles.activeTabText]}>
+              Tasks
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tab, selectedTab === 'rewards' && styles.activeTab]}
+            onPress={() => setSelectedTab('rewards')}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.tabText, selectedTab === 'rewards' && styles.activeTabText]}>
+              Rewards
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {selectedTab === 'tasks' ? (
+          <>
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Active Tasks</Text>
+                <TouchableOpacity
+                  style={styles.addButton}
+                  onPress={() => setShowAddTask(true)}
+                  activeOpacity={0.7}
+                >
+                  <IconSymbol
+                    ios_icon_name="plus"
+                    android_material_icon_name="add"
+                    size={20}
+                    color={colors.card}
+                  />
+                  <Text style={styles.addButtonText}>Add Task</Text>
+                </TouchableOpacity>
+              </View>
+              {activeTasks.length === 0 ? (
+                <View style={styles.emptyState}>
+                  <IconSymbol
+                    ios_icon_name="checkmark.circle"
+                    android_material_icon_name="check_circle"
+                    size={48}
+                    color={colors.textSecondary}
+                  />
+                  <Text style={styles.emptyStateText}>No active tasks</Text>
+                  <Text style={styles.emptyStateSubtext}>Add a task to get started!</Text>
+                </View>
+              ) : (
+                activeTasks.map((task, index) => {
+                  const assignedChild = task.assignedTo ? children.find(c => c.id === task.assignedTo) : undefined;
+                  return (
+                    <React.Fragment key={index}>
+                      <TaskCard
+                        task={task}
+                        child={assignedChild}
+                        onComplete={() => handleCompleteTask(task.id)}
+                        onDelete={() => handleDeleteTask(task.id)}
+                      />
+                    </React.Fragment>
+                  );
+                })
+              )}
+            </View>
+
+            {completedTasks.length > 0 && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Completed Tasks</Text>
+                {completedTasks.map((task, index) => {
+                  const assignedChild = task.assignedTo ? children.find(c => c.id === task.assignedTo) : undefined;
+                  return (
+                    <React.Fragment key={index}>
+                      <TaskCard
+                        task={task}
+                        child={assignedChild}
+                        showActions={false}
+                      />
+                    </React.Fragment>
+                  );
+                })}
+              </View>
+            )}
+          </>
+        ) : (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Available Rewards</Text>
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={() => setShowAddReward(true)}
+                activeOpacity={0.7}
+              >
+                <IconSymbol
+                  ios_icon_name="plus"
+                  android_material_icon_name="add"
+                  size={20}
+                  color={colors.card}
+                />
+                <Text style={styles.addButtonText}>Add Reward</Text>
+              </TouchableOpacity>
+            </View>
+            {rewards.length === 0 ? (
+              <View style={styles.emptyState}>
+                <IconSymbol
+                  ios_icon_name="gift"
+                  android_material_icon_name="card_giftcard"
+                  size={48}
+                  color={colors.textSecondary}
+                />
+                <Text style={styles.emptyStateText}>No rewards yet</Text>
+                <Text style={styles.emptyStateSubtext}>Add rewards for kids to work towards!</Text>
+              </View>
+            ) : (
+              rewards.map((reward, index) => (
+                <React.Fragment key={index}>
+                  <View style={styles.rewardItem}>
+                    <RewardCard
+                      reward={reward}
+                      onDelete={() => handleDeleteReward(reward.id)}
+                      showActions={false}
+                    />
+                    <View style={styles.redeemContainer}>
+                      {children.map((child, childIndex) => (
+                        <React.Fragment key={childIndex}>
+                          <TouchableOpacity
+                            style={[
+                              styles.childRedeemButton,
+                              child.points >= reward.pointsRequired && styles.childRedeemButtonActive,
+                            ]}
+                            onPress={() => handleRedeemReward(reward.id, child.id)}
+                            activeOpacity={0.7}
+                          >
+                            <Text style={styles.childRedeemAvatar}>{child.avatar}</Text>
+                            <Text style={[
+                              styles.childRedeemText,
+                              child.points >= reward.pointsRequired && styles.childRedeemTextActive,
+                            ]}>
+                              {child.name}
+                            </Text>
+                          </TouchableOpacity>
+                        </React.Fragment>
+                      ))}
+                    </View>
+                  </View>
+                </React.Fragment>
+              ))
+            )}
+          </View>
+        )}
+      </ScrollView>
+
+      <AddTaskModal
+        visible={showAddTask}
+        onClose={() => setShowAddTask(false)}
+        onAdd={addTask}
+        children={children}
+      />
+
+      <AddRewardModal
+        visible={showAddReward}
+        onClose={() => setShowAddReward(false)}
+        onAdd={addReward}
+      />
+
+      <AddChildModal
+        visible={showAddChild}
+        onClose={() => setShowAddChild(false)}
+        onAdd={addChild}
       />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  listContainer: {
-    paddingTop: 48,
-    paddingHorizontal: 16,
-    paddingBottom: 100, // Extra padding for floating tab bar
-  },
-});

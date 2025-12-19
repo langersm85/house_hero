@@ -1,75 +1,307 @@
-import React from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { IconSymbol } from "@/components/IconSymbol";
-import { GlassView } from "expo-glass-effect";
-import { useTheme } from "@react-navigation/native";
+
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { colors } from '@/styles/commonStyles';
+import { useChores } from '@/contexts/ChoreContext';
+import { IconSymbol } from '@/components/IconSymbol';
 
 export default function ProfileScreen() {
-  const theme = useTheme();
+  const { children, tasks, rewards } = useChores();
+
+  const totalPoints = children.reduce((sum, child) => sum + child.points, 0);
+  const completedTasksCount = tasks.filter(t => t.completed).length;
+  const activeTasksCount = tasks.filter(t => !t.completed).length;
+
+  const handleInfo = (title: string, message: string) => {
+    Alert.alert(title, message);
+  };
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors.background }]} edges={['top']}>
+    <View style={styles.container}>
       <ScrollView
-        style={styles.container}
+        style={styles.scrollView}
         contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
       >
-        <GlassView style={styles.profileHeader} glassEffectStyle="regular">
-          <IconSymbol ios_icon_name="person.circle.fill" android_material_icon_name="person" size={24} color={theme.colors.primary} />
-          <Text style={[styles.name, { color: theme.colors.text }]}>John Doe</Text>
-          <Text style={[styles.email, { color: theme.dark ? '#98989D' : '#666' }]}>john.doe@example.com</Text>
-        </GlassView>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Family Stats</Text>
+          <Text style={styles.headerSubtitle}>Track your family&apos;s progress</Text>
+        </View>
 
-        <GlassView style={styles.section} glassEffectStyle="regular">
-          <View style={styles.infoRow}>
-            <IconSymbol ios_icon_name="phone.fill" android_material_icon_name="phone" size={24} color={theme.dark ? '#98989D' : '#666'} />
-            <Text style={[styles.infoText, { color: theme.colors.text }]}>+1 (555) 123-4567</Text>
+        <View style={styles.statsGrid}>
+          <View style={styles.statCard}>
+            <View style={styles.statIconContainer}>
+              <IconSymbol
+                ios_icon_name="person.2.fill"
+                android_material_icon_name="people"
+                size={32}
+                color={colors.primary}
+              />
+            </View>
+            <Text style={styles.statValue}>{children.length}</Text>
+            <Text style={styles.statLabel}>Children</Text>
           </View>
-          <View style={styles.infoRow}>
-            <IconSymbol ios_icon_name="location.fill" android_material_icon_name="location-on" size={24} color={theme.dark ? '#98989D' : '#666'} />
-            <Text style={[styles.infoText, { color: theme.colors.text }]}>San Francisco, CA</Text>
+
+          <View style={styles.statCard}>
+            <View style={styles.statIconContainer}>
+              <IconSymbol
+                ios_icon_name="star.fill"
+                android_material_icon_name="star"
+                size={32}
+                color={colors.accent}
+              />
+            </View>
+            <Text style={styles.statValue}>{totalPoints}</Text>
+            <Text style={styles.statLabel}>Total Points</Text>
           </View>
-        </GlassView>
+
+          <View style={styles.statCard}>
+            <View style={styles.statIconContainer}>
+              <IconSymbol
+                ios_icon_name="checkmark.circle.fill"
+                android_material_icon_name="check_circle"
+                size={32}
+                color={colors.primary}
+              />
+            </View>
+            <Text style={styles.statValue}>{completedTasksCount}</Text>
+            <Text style={styles.statLabel}>Completed</Text>
+          </View>
+
+          <View style={styles.statCard}>
+            <View style={styles.statIconContainer}>
+              <IconSymbol
+                ios_icon_name="list.bullet"
+                android_material_icon_name="list"
+                size={32}
+                color={colors.secondary}
+              />
+            </View>
+            <Text style={styles.statValue}>{activeTasksCount}</Text>
+            <Text style={styles.statLabel}>Active Tasks</Text>
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Children Leaderboard</Text>
+          {[...children]
+            .sort((a, b) => b.points - a.points)
+            .map((child, index) => (
+              <React.Fragment key={index}>
+                <View style={styles.leaderboardItem}>
+                  <View style={styles.rankBadge}>
+                    <Text style={styles.rankText}>#{index + 1}</Text>
+                  </View>
+                  <Text style={styles.childAvatar}>{child.avatar}</Text>
+                  <View style={styles.childInfo}>
+                    <Text style={styles.childName}>{child.name}</Text>
+                    <View style={styles.pointsContainer}>
+                      <IconSymbol
+                        ios_icon_name="star.fill"
+                        android_material_icon_name="star"
+                        size={14}
+                        color={colors.accent}
+                      />
+                      <Text style={styles.childPoints}>{child.points} points</Text>
+                    </View>
+                  </View>
+                  {index === 0 && (
+                    <View style={styles.crownBadge}>
+                      <IconSymbol
+                        ios_icon_name="crown.fill"
+                        android_material_icon_name="emoji_events"
+                        size={24}
+                        color={colors.accent}
+                      />
+                    </View>
+                  )}
+                </View>
+              </React.Fragment>
+            ))}
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>About</Text>
+          <TouchableOpacity
+            style={styles.infoCard}
+            onPress={() => handleInfo(
+              'How It Works',
+              'Parents create tasks with point values. When kids complete tasks, parents mark them as done and points are automatically added. Kids can redeem their points for rewards!'
+            )}
+            activeOpacity={0.7}
+          >
+            <IconSymbol
+              ios_icon_name="info.circle"
+              android_material_icon_name="info"
+              size={24}
+              color={colors.secondary}
+            />
+            <Text style={styles.infoText}>How It Works</Text>
+            <IconSymbol
+              ios_icon_name="chevron.right"
+              android_material_icon_name="chevron_right"
+              size={20}
+              color={colors.textSecondary}
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.infoCard}
+            onPress={() => handleInfo(
+              'Tips for Parents',
+              '- Set clear expectations for each task\n- Be consistent with point values\n- Celebrate achievements\n- Make rewards meaningful\n- Adjust points as needed'
+            )}
+            activeOpacity={0.7}
+          >
+            <IconSymbol
+              ios_icon_name="lightbulb"
+              android_material_icon_name="lightbulb"
+              size={24}
+              color={colors.accent}
+            />
+            <Text style={styles.infoText}>Tips for Parents</Text>
+            <IconSymbol
+              ios_icon_name="chevron.right"
+              android_material_icon_name="chevron_right"
+              size={20}
+              color={colors.textSecondary}
+            />
+          </TouchableOpacity>
+        </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-  },
   container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  scrollView: {
     flex: 1,
   },
   contentContainer: {
-    padding: 20,
+    paddingTop: 16,
+    paddingHorizontal: 16,
+    paddingBottom: 120,
   },
-  profileHeader: {
-    alignItems: 'center',
-    borderRadius: 12,
-    padding: 32,
-    marginBottom: 16,
-    gap: 12,
+  header: {
+    marginBottom: 24,
   },
-  name: {
-    fontSize: 24,
-    fontWeight: 'bold',
+  headerTitle: {
+    fontSize: 32,
+    fontWeight: '800',
+    color: colors.text,
+    marginBottom: 4,
   },
-  email: {
+  headerSubtitle: {
     fontSize: 16,
+    color: colors.textSecondary,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginBottom: 24,
+  },
+  statCard: {
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    width: '48%',
+    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+    elevation: 2,
+  },
+  statIconContainer: {
+    marginBottom: 8,
+  },
+  statValue: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: colors.text,
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    fontWeight: '500',
   },
   section: {
-    borderRadius: 12,
-    padding: 20,
-    gap: 12,
+    marginBottom: 24,
   },
-  infoRow: {
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: 12,
+  },
+  leaderboardItem: {
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+    elevation: 2,
+  },
+  rankBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.highlight,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  rankText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.primary,
+  },
+  childAvatar: {
+    fontSize: 32,
+    marginRight: 12,
+  },
+  childInfo: {
+    flex: 1,
+  },
+  childName: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 4,
+  },
+  pointsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  childPoints: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    fontWeight: '500',
+  },
+  crownBadge: {
+    marginLeft: 8,
+  },
+  infoCard: {
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+    elevation: 2,
   },
   infoText: {
+    flex: 1,
     fontSize: 16,
+    fontWeight: '600',
+    color: colors.text,
+    marginLeft: 12,
   },
 });
