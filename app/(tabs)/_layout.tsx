@@ -9,19 +9,22 @@ export default function TabLayout() {
     {
       name: '(home)',
       route: '/(tabs)/(home)/',
-      icon: 'home',
+      ios_icon_name: 'house',
+      android_material_icon_name: 'home',
       label: 'Home',
     },
     {
       name: 'tasks',
       route: '/(tabs)/tasks',
-      icon: 'list',
+      ios_icon_name: 'list.bullet.clipboard',
+      android_material_icon_name: 'assignment',
       label: 'Tasks',
     },
     {
       name: 'profile',
       route: '/(tabs)/profile',
-      icon: 'person',
+      ios_icon_name: 'person',
+      android_material_icon_name: 'person',
       label: 'Profile',
     },
   ];
