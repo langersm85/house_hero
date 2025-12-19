@@ -486,7 +486,7 @@ export default function HomeScreen() {
         visible={showAddTask}
         onClose={() => setShowAddTask(false)}
         onAdd={addTask}
-        children={children}
+        childrenList={children}
       />
 
       <AddRewardModal

@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Child, Task, Reward } from '@/types/chore.types';
 
@@ -32,18 +32,6 @@ export function ChoreProvider({ children: reactChildren }: { children: ReactNode
   const [tasks, setTasks] = useState<Task[]>([]);
   const [rewards, setRewards] = useState<Reward[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  // Load data from AsyncStorage on mount
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  // Save data to AsyncStorage whenever it changes
-  useEffect(() => {
-    if (!isLoading) {
-      saveData();
-    }
-  }, [children, tasks, rewards]);
 
   const loadData = async () => {
     try {
@@ -92,7 +80,7 @@ export function ChoreProvider({ children: reactChildren }: { children: ReactNode
     }
   };
 
-  const saveData = async () => {
+  const saveData = useCallback(async () => {
     try {
       await Promise.all([
         AsyncStorage.setItem(STORAGE_KEYS.CHILDREN, JSON.stringify(children)),
@@ -102,7 +90,19 @@ export function ChoreProvider({ children: reactChildren }: { children: ReactNode
     } catch (error) {
       console.log('Error saving data:', error);
     }
-  };
+  }, [children, tasks, rewards]);
+
+  // Load data from AsyncStorage on mount
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  // Save data to AsyncStorage whenever it changes
+  useEffect(() => {
+    if (!isLoading) {
+      saveData();
+    }
+  }, [children, tasks, rewards, isLoading, saveData]);
 
   const addChild = (name: string, avatar: string) => {
     const newChild: Child = {

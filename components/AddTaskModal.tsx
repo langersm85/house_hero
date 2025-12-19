@@ -9,10 +9,10 @@ interface AddTaskModalProps {
   visible: boolean;
   onClose: () => void;
   onAdd: (name: string, points: number, description?: string, assignedTo?: string) => void;
-  children: Child[];
+  childrenList: Child[];
 }
 
-export function AddTaskModal({ visible, onClose, onAdd, children }: AddTaskModalProps) {
+export function AddTaskModal({ visible, onClose, onAdd, childrenList }: AddTaskModalProps) {
   const colors = useThemeColors();
   const [name, setName] = useState('');
   const [points, setPoints] = useState('');
@@ -193,7 +193,7 @@ export function AddTaskModal({ visible, onClose, onAdd, children }: AddTaskModal
 
             <Text style={styles.label}>Assign To (Optional)</Text>
             <View style={styles.childrenContainer}>
-              {children.map((child, index) => (
+              {childrenList.map((child, index) => (
                 <React.Fragment key={index}>
                   <TouchableOpacity
                     style={[
