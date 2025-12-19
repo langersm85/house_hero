@@ -1,10 +1,11 @@
 
-import { StyleSheet, useColorScheme } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export const useThemeColors = () => {
-  const colorScheme = useColorScheme();
+  const { isDark } = useTheme();
   
-  if (colorScheme === 'dark') {
+  if (isDark) {
     return {
       background: '#121212',
       text: '#FFFFFF',

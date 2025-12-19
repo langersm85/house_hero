@@ -1,13 +1,16 @@
 
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal, Switch } from 'react-native';
 import { useThemeColors } from '@/styles/commonStyles';
 import { useChores } from '@/contexts/ChoreContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { IconSymbol } from '@/components/IconSymbol';
 
 export default function ProfileScreen() {
   const colors = useThemeColors();
   const { children, tasks, rewards } = useChores();
+  const { themeMode, setThemeMode } = useTheme();
+  const [showThemeModal, setShowThemeModal] = useState(false);
 
   const totalPoints = children.reduce((sum, child) => sum + child.points, 0);
   const completedTasksCount = tasks.filter(t => t.completed).length;
@@ -15,6 +18,19 @@ export default function ProfileScreen() {
 
   const handleInfo = (title: string, message: string) => {
     Alert.alert(title, message);
+  };
+
+  const getThemeLabel = () => {
+    switch (themeMode) {
+      case 'light':
+        return 'Light';
+      case 'dark':
+        return 'Dark';
+      case 'auto':
+        return 'Auto (System)';
+      default:
+        return 'Auto (System)';
+    }
   };
 
   const styles = StyleSheet.create({
@@ -163,6 +179,70 @@ export default function ProfileScreen() {
       color: colors.textSecondary,
       marginTop: 4,
     },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 20,
+    },
+    modalContent: {
+      backgroundColor: colors.card,
+      borderRadius: 16,
+      padding: 24,
+      width: '100%',
+      maxWidth: 400,
+      boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.2)',
+      elevation: 5,
+    },
+    modalTitle: {
+      fontSize: 24,
+      fontWeight: '700',
+      color: colors.text,
+      marginBottom: 20,
+      textAlign: 'center',
+    },
+    themeOption: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: 16,
+      paddingHorizontal: 12,
+      borderRadius: 12,
+      marginBottom: 8,
+      backgroundColor: colors.background,
+    },
+    themeOptionSelected: {
+      backgroundColor: colors.highlight,
+    },
+    themeOptionContent: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flex: 1,
+    },
+    themeOptionText: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: colors.text,
+      marginLeft: 12,
+    },
+    closeButton: {
+      marginTop: 16,
+      backgroundColor: colors.primary,
+      borderRadius: 12,
+      padding: 16,
+      alignItems: 'center',
+    },
+    closeButtonText: {
+      fontSize: 16,
+      fontWeight: '700',
+      color: '#FFFFFF',
+    },
+    themeValueText: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      marginLeft: 'auto',
+    },
   });
 
   return (
@@ -283,6 +363,30 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Settings</Text>
+          <TouchableOpacity
+            style={styles.infoCard}
+            onPress={() => setShowThemeModal(true)}
+            activeOpacity={0.7}
+          >
+            <IconSymbol
+              ios_icon_name="paintbrush.fill"
+              android_material_icon_name="palette"
+              size={24}
+              color={colors.primary}
+            />
+            <Text style={styles.infoText}>Display Settings</Text>
+            <Text style={styles.themeValueText}>{getThemeLabel()}</Text>
+            <IconSymbol
+              ios_icon_name="chevron.right"
+              android_material_icon_name="chevron_right"
+              size={20}
+              color={colors.textSecondary}
+            />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.section}>
           <Text style={styles.sectionTitle}>About</Text>
           <TouchableOpacity
             style={styles.infoCard}
@@ -331,6 +435,117 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      <Modal
+        visible={showThemeModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowThemeModal(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowThemeModal(false)}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={(e) => e.stopPropagation()}
+          >
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Display Settings</Text>
+
+              <TouchableOpacity
+                style={[
+                  styles.themeOption,
+                  themeMode === 'light' && styles.themeOptionSelected,
+                ]}
+                onPress={() => setThemeMode('light')}
+                activeOpacity={0.7}
+              >
+                <View style={styles.themeOptionContent}>
+                  <IconSymbol
+                    ios_icon_name="sun.max.fill"
+                    android_material_icon_name="light_mode"
+                    size={24}
+                    color={colors.accent}
+                  />
+                  <Text style={styles.themeOptionText}>Light Mode</Text>
+                </View>
+                {themeMode === 'light' && (
+                  <IconSymbol
+                    ios_icon_name="checkmark.circle.fill"
+                    android_material_icon_name="check_circle"
+                    size={24}
+                    color={colors.primary}
+                  />
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.themeOption,
+                  themeMode === 'dark' && styles.themeOptionSelected,
+                ]}
+                onPress={() => setThemeMode('dark')}
+                activeOpacity={0.7}
+              >
+                <View style={styles.themeOptionContent}>
+                  <IconSymbol
+                    ios_icon_name="moon.fill"
+                    android_material_icon_name="dark_mode"
+                    size={24}
+                    color={colors.secondary}
+                  />
+                  <Text style={styles.themeOptionText}>Dark Mode</Text>
+                </View>
+                {themeMode === 'dark' && (
+                  <IconSymbol
+                    ios_icon_name="checkmark.circle.fill"
+                    android_material_icon_name="check_circle"
+                    size={24}
+                    color={colors.primary}
+                  />
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.themeOption,
+                  themeMode === 'auto' && styles.themeOptionSelected,
+                ]}
+                onPress={() => setThemeMode('auto')}
+                activeOpacity={0.7}
+              >
+                <View style={styles.themeOptionContent}>
+                  <IconSymbol
+                    ios_icon_name="circle.lefthalf.filled"
+                    android_material_icon_name="brightness_auto"
+                    size={24}
+                    color={colors.primary}
+                  />
+                  <Text style={styles.themeOptionText}>Auto (System)</Text>
+                </View>
+                {themeMode === 'auto' && (
+                  <IconSymbol
+                    ios_icon_name="checkmark.circle.fill"
+                    android_material_icon_name="check_circle"
+                    size={24}
+                    color={colors.primary}
+                  />
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => setShowThemeModal(false)}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.closeButtonText}>Done</Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
