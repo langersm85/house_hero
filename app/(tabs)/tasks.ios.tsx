@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet, View, Text, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useThemeColors } from '@/styles/commonStyles';
 import { useChores } from '@/contexts/ChoreContext';
 import { TaskCard } from '@/components/TaskCard';
@@ -67,10 +66,6 @@ export default function TasksScreen() {
   };
 
   const styles = StyleSheet.create({
-    safeArea: {
-      flex: 1,
-      backgroundColor: colors.background,
-    },
     container: {
       flex: 1,
       backgroundColor: colors.background,
@@ -79,7 +74,7 @@ export default function TasksScreen() {
       flex: 1,
     },
     contentContainer: {
-      paddingTop: 16,
+      paddingTop: 60,
       paddingHorizontal: 16,
       paddingBottom: 120,
     },
@@ -242,166 +237,162 @@ export default function TasksScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.safeArea} edges={['top']}>
-        <View style={[styles.container, styles.loadingContainer]}>
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
-      </SafeAreaView>
+      <View style={[styles.container, styles.loadingContainer]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <View style={styles.container}>
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.contentContainer}
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={styles.header}>
-            <Text style={styles.headerTitle}>Task Library</Text>
-            <Text style={styles.headerSubtitle}>Reusable task templates</Text>
+    <View style={styles.container}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Task Library</Text>
+          <Text style={styles.headerSubtitle}>Reusable task templates</Text>
+        </View>
+
+        <View style={styles.infoBox}>
+          <IconSymbol
+            ios_icon_name="lightbulb.fill"
+            android_material_icon_name="lightbulb"
+            size={24}
+            color={colors.primary}
+          />
+          <Text style={styles.infoText}>
+            Create task templates here and assign them to children whenever needed. No need to recreate tasks every time!
+          </Text>
+        </View>
+
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Task Templates</Text>
+            <TouchableOpacity
+              style={styles.addButton}
+              onPress={() => setShowAddTemplate(true)}
+              activeOpacity={0.7}
+            >
+              <IconSymbol
+                ios_icon_name="plus"
+                android_material_icon_name="add"
+                size={20}
+                color={colors.card}
+              />
+              <Text style={styles.addButtonText}>Add Template</Text>
+            </TouchableOpacity>
           </View>
 
-          <View style={styles.infoBox}>
-            <IconSymbol
-              ios_icon_name="lightbulb.fill"
-              android_material_icon_name="lightbulb"
-              size={24}
-              color={colors.primary}
-            />
-            <Text style={styles.infoText}>
-              Create task templates here and assign them to children whenever needed. No need to recreate tasks every time!
-            </Text>
-          </View>
-
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Task Templates</Text>
-              <TouchableOpacity
-                style={styles.addButton}
-                onPress={() => setShowAddTemplate(true)}
-                activeOpacity={0.7}
-              >
-                <IconSymbol
-                  ios_icon_name="plus"
-                  android_material_icon_name="add"
-                  size={20}
-                  color={colors.card}
-                />
-                <Text style={styles.addButtonText}>Add Template</Text>
-              </TouchableOpacity>
+          {taskTemplates.length === 0 ? (
+            <View style={styles.emptyState}>
+              <IconSymbol
+                ios_icon_name="list.bullet.clipboard"
+                android_material_icon_name="assignment"
+                size={48}
+                color={colors.textSecondary}
+              />
+              <Text style={styles.emptyStateText}>No task templates yet</Text>
+              <Text style={styles.emptyStateSubtext}>Create templates for recurring tasks!</Text>
             </View>
-
-            {taskTemplates.length === 0 ? (
-              <View style={styles.emptyState}>
-                <IconSymbol
-                  ios_icon_name="list.bullet.clipboard"
-                  android_material_icon_name="assignment"
-                  size={48}
-                  color={colors.textSecondary}
-                />
-                <Text style={styles.emptyStateText}>No task templates yet</Text>
-                <Text style={styles.emptyStateSubtext}>Create templates for recurring tasks!</Text>
-              </View>
-            ) : (
-              taskTemplates.map((template, index) => (
-                <React.Fragment key={index}>
-                  <View style={styles.templateCard}>
-                    <View style={styles.templateHeader}>
-                      <View style={styles.templateInfo}>
-                        <Text style={styles.templateName}>{template.name}</Text>
-                        {template.description && (
-                          <Text style={styles.templateDescription}>{template.description}</Text>
-                        )}
-                      </View>
-                      <View style={styles.pointsBadge}>
-                        <IconSymbol
-                          ios_icon_name="star.fill"
-                          android_material_icon_name="star"
-                          size={14}
-                          color={colors.accent}
-                        />
-                        <Text style={styles.pointsText}>{template.points}</Text>
-                      </View>
+          ) : (
+            taskTemplates.map((template, index) => (
+              <React.Fragment key={index}>
+                <View style={styles.templateCard}>
+                  <View style={styles.templateHeader}>
+                    <View style={styles.templateInfo}>
+                      <Text style={styles.templateName}>{template.name}</Text>
+                      {template.description && (
+                        <Text style={styles.templateDescription}>{template.description}</Text>
+                      )}
                     </View>
-
-                    <View style={styles.actionsContainer}>
-                      <TouchableOpacity
-                        style={[styles.actionButton, styles.assignButton]}
-                        onPress={() => handleAssignTemplate(template)}
-                        activeOpacity={0.7}
-                      >
-                        <IconSymbol
-                          ios_icon_name="person.badge.plus"
-                          android_material_icon_name="person_add"
-                          size={18}
-                          color={colors.card}
-                        />
-                        <Text style={styles.assignButtonText}>Assign</Text>
-                      </TouchableOpacity>
-
-                      <TouchableOpacity
-                        style={[styles.actionButton, styles.editButton]}
-                        onPress={() => handleEditTemplate(template)}
-                        activeOpacity={0.7}
-                      >
-                        <IconSymbol
-                          ios_icon_name="pencil"
-                          android_material_icon_name="edit"
-                          size={18}
-                          color={colors.text}
-                        />
-                        <Text style={styles.editButtonText}>Edit</Text>
-                      </TouchableOpacity>
-
-                      <TouchableOpacity
-                        style={[styles.actionButton, styles.deleteButton]}
-                        onPress={() => handleDeleteTemplate(template.id)}
-                        activeOpacity={0.7}
-                      >
-                        <IconSymbol
-                          ios_icon_name="trash"
-                          android_material_icon_name="delete"
-                          size={18}
-                          color={colors.textSecondary}
-                        />
-                      </TouchableOpacity>
+                    <View style={styles.pointsBadge}>
+                      <IconSymbol
+                        ios_icon_name="star.fill"
+                        android_material_icon_name="star"
+                        size={14}
+                        color={colors.accent}
+                      />
+                      <Text style={styles.pointsText}>{template.points}</Text>
                     </View>
                   </View>
-                </React.Fragment>
-              ))
-            )}
-          </View>
-        </ScrollView>
 
-        <AddTaskTemplateModal
-          visible={showAddTemplate}
-          onClose={() => setShowAddTemplate(false)}
-          onAdd={addTaskTemplate}
-        />
+                  <View style={styles.actionsContainer}>
+                    <TouchableOpacity
+                      style={[styles.actionButton, styles.assignButton]}
+                      onPress={() => handleAssignTemplate(template)}
+                      activeOpacity={0.7}
+                    >
+                      <IconSymbol
+                        ios_icon_name="person.badge.plus"
+                        android_material_icon_name="person_add"
+                        size={18}
+                        color={colors.card}
+                      />
+                      <Text style={styles.assignButtonText}>Assign</Text>
+                    </TouchableOpacity>
 
-        <EditTaskTemplateModal
-          visible={showEditTemplate}
-          onClose={() => {
-            setShowEditTemplate(false);
-            setEditingTemplate(null);
-          }}
-          onUpdate={handleUpdateTemplate}
-          template={editingTemplate}
-        />
+                    <TouchableOpacity
+                      style={[styles.actionButton, styles.editButton]}
+                      onPress={() => handleEditTemplate(template)}
+                      activeOpacity={0.7}
+                    >
+                      <IconSymbol
+                        ios_icon_name="pencil"
+                        android_material_icon_name="edit"
+                        size={18}
+                        color={colors.text}
+                      />
+                      <Text style={styles.editButtonText}>Edit</Text>
+                    </TouchableOpacity>
 
-        <AssignTaskModal
-          visible={showAssignTask}
-          onClose={() => {
-            setShowAssignTask(false);
-            setSelectedTemplate(null);
-          }}
-          onAssign={handleCreateTask}
-          childrenList={children}
-          taskName={selectedTemplate?.name || ''}
-        />
-      </View>
-    </SafeAreaView>
+                    <TouchableOpacity
+                      style={[styles.actionButton, styles.deleteButton]}
+                      onPress={() => handleDeleteTemplate(template.id)}
+                      activeOpacity={0.7}
+                    >
+                      <IconSymbol
+                        ios_icon_name="trash"
+                        android_material_icon_name="delete"
+                        size={18}
+                        color={colors.textSecondary}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </React.Fragment>
+            ))
+          )}
+        </View>
+      </ScrollView>
+
+      <AddTaskTemplateModal
+        visible={showAddTemplate}
+        onClose={() => setShowAddTemplate(false)}
+        onAdd={addTaskTemplate}
+      />
+
+      <EditTaskTemplateModal
+        visible={showEditTemplate}
+        onClose={() => {
+          setShowEditTemplate(false);
+          setEditingTemplate(null);
+        }}
+        onUpdate={handleUpdateTemplate}
+        template={editingTemplate}
+      />
+
+      <AssignTaskModal
+        visible={showAssignTask}
+        onClose={() => {
+          setShowAssignTask(false);
+          setSelectedTemplate(null);
+        }}
+        onAssign={handleCreateTask}
+        childrenList={children}
+        taskName={selectedTemplate?.name || ''}
+      />
+    </View>
   );
 }

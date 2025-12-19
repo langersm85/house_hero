@@ -473,7 +473,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contentContainer: {
-    paddingTop: 16,
+    paddingTop: 60,
     paddingHorizontal: 16,
     paddingBottom: 120,
   },

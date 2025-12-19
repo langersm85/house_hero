@@ -12,6 +12,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={({ route }) => ({
+        headerShown: false, // DISABLE NATIVE HEADERS - this removes the duplicate header
         tabBarActiveTintColor: activeColor,
         tabBarInactiveTintColor: inactiveColor,
         tabBarIcon: ({ color, focused }) => {
