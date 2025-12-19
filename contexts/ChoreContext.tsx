@@ -11,7 +11,7 @@ interface ChoreContextType {
   updateChild: (id: string, name: string, avatar: string) => void;
   updateChildPoints: (childId: string, points: number) => void;
   deleteChild: (childId: string) => void;
-  addTask: (name: string, points: number, description?: string, assignedTo?: string) => void;
+  addTask: (name: string, points: number, description?: string, assignedTo?: string | string[]) => void;
   completeTask: (taskId: string, childId: string) => void;
   deleteTask: (taskId: string) => void;
   addReward: (name: string, pointsRequired: number, type: Reward['type'], description?: string) => void;
@@ -134,12 +134,18 @@ export function ChoreProvider({ children: reactChildren }: { children: ReactNode
   const deleteChild = (childId: string) => {
     setChildren(prev => prev.filter(c => c.id !== childId));
     // Also remove tasks assigned to this child
-    setTasks(prev => prev.map(t => 
-      t.assignedTo === childId ? { ...t, assignedTo: undefined } : t
-    ));
+    setTasks(prev => prev.map(t => {
+      if (Array.isArray(t.assignedTo)) {
+        const newAssignedTo = t.assignedTo.filter(id => id !== childId);
+        return { ...t, assignedTo: newAssignedTo.length > 0 ? (newAssignedTo.length === 1 ? newAssignedTo[0] : newAssignedTo) : undefined };
+      } else if (t.assignedTo === childId) {
+        return { ...t, assignedTo: undefined };
+      }
+      return t;
+    }));
   };
 
-  const addTask = (name: string, points: number, description?: string, assignedTo?: string) => {
+  const addTask = (name: string, points: number, description?: string, assignedTo?: string | string[]) => {
     const newTask: Task = {
       id: Date.now().toString(),
       name,
@@ -147,32 +153,77 @@ export function ChoreProvider({ children: reactChildren }: { children: ReactNode
       description,
       assignedTo,
       completed: false,
+      completedBy: [],
     };
     setTasks(prev => [...prev, newTask]);
   };
 
   const completeTask = (taskId: string, childId: string) => {
     const task = tasks.find(t => t.id === taskId);
-    if (!task || task.completed) {
-      console.log('Task not found or already completed');
+    if (!task) {
+      console.log('Task not found');
       return;
     }
 
-    setTasks(prev =>
-      prev.map(t =>
-        t.id === taskId
-          ? { ...t, completed: true, completedAt: new Date() }
-          : t
-      )
-    );
+    // Check if task is assigned to multiple children
+    const isMultipleAssignment = Array.isArray(task.assignedTo);
+    
+    if (isMultipleAssignment) {
+      // For multiple assignments, track individual completions
+      const completedBy = task.completedBy || [];
+      
+      if (completedBy.includes(childId)) {
+        console.log('Task already completed by this child');
+        return;
+      }
 
-    setChildren(prev =>
-      prev.map(child =>
-        child.id === childId
-          ? { ...child, points: child.points + task.points }
-          : child
-      )
-    );
+      const newCompletedBy = [...completedBy, childId];
+      const allChildrenCompleted = task.assignedTo.every((id: string) => newCompletedBy.includes(id));
+
+      setTasks(prev =>
+        prev.map(t =>
+          t.id === taskId
+            ? { 
+                ...t, 
+                completedBy: newCompletedBy,
+                completed: allChildrenCompleted,
+                completedAt: allChildrenCompleted ? new Date() : t.completedAt
+              }
+            : t
+        )
+      );
+
+      // Award points to the child who completed it
+      setChildren(prev =>
+        prev.map(child =>
+          child.id === childId
+            ? { ...child, points: child.points + task.points }
+            : child
+        )
+      );
+    } else {
+      // Single assignment - mark as complete
+      if (task.completed) {
+        console.log('Task already completed');
+        return;
+      }
+
+      setTasks(prev =>
+        prev.map(t =>
+          t.id === taskId
+            ? { ...t, completed: true, completedAt: new Date(), completedBy: [childId] }
+            : t
+        )
+      );
+
+      setChildren(prev =>
+        prev.map(child =>
+          child.id === childId
+            ? { ...child, points: child.points + task.points }
+            : child
+        )
+      );
+    }
   };
 
   const deleteTask = (taskId: string) => {

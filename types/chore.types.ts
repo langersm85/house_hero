@@ -11,9 +11,10 @@ export interface Task {
   name: string;
   points: number;
   description?: string;
-  assignedTo?: string;
+  assignedTo?: string | string[]; // Can be a single child ID or array of child IDs
   completed: boolean;
   completedAt?: Date;
+  completedBy?: string[]; // Track which children have completed the task
 }
 
 export interface Reward {

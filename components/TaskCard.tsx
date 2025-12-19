@@ -7,14 +7,17 @@ import { IconSymbol } from './IconSymbol';
 
 interface TaskCardProps {
   task: Task;
-  child?: Child;
-  onComplete?: () => void;
+  children?: Child[];
+  onComplete?: (childId: string) => void;
   onDelete?: () => void;
   showActions?: boolean;
 }
 
-export function TaskCard({ task, child, onComplete, onDelete, showActions = true }: TaskCardProps) {
+export function TaskCard({ task, children, onComplete, onDelete, showActions = true }: TaskCardProps) {
   const colors = useThemeColors();
+
+  const isMultipleAssignment = Array.isArray(task.assignedTo);
+  const completedBy = task.completedBy || [];
 
   const styles = StyleSheet.create({
     container: {
@@ -22,15 +25,18 @@ export function TaskCard({ task, child, onComplete, onDelete, showActions = true
       borderRadius: 12,
       padding: 16,
       marginBottom: 12,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
       boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
       elevation: 2,
     },
     completedContainer: {
       backgroundColor: colors.highlight,
       opacity: 0.7,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 8,
     },
     leftSection: {
       flex: 1,
@@ -75,19 +81,49 @@ export function TaskCard({ task, child, onComplete, onDelete, showActions = true
       marginBottom: 4,
     },
     assignedContainer: {
-      marginTop: 4,
+      marginTop: 8,
     },
-    assignedText: {
+    assignedLabel: {
       fontSize: 12,
+      fontWeight: '600',
       color: colors.textSecondary,
+      marginBottom: 6,
+    },
+    childrenList: {
+      gap: 8,
+    },
+    childRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      backgroundColor: colors.background,
+      borderRadius: 8,
+      padding: 10,
+    },
+    childInfo: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      flex: 1,
+    },
+    childAvatar: {
+      fontSize: 18,
+    },
+    childName: {
+      fontSize: 14,
+      fontWeight: '500',
+      color: colors.text,
+    },
+    childCompleted: {
+      opacity: 0.5,
+    },
+    completeButton: {
+      padding: 4,
     },
     actionsContainer: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 8,
-    },
-    completeButton: {
-      padding: 4,
     },
     deleteButton: {
       padding: 4,
@@ -95,80 +131,128 @@ export function TaskCard({ task, child, onComplete, onDelete, showActions = true
     completedBadgeContainer: {
       marginLeft: 8,
     },
+    singleChildContainer: {
+      marginTop: 4,
+    },
+    singleChildText: {
+      fontSize: 12,
+      color: colors.textSecondary,
+    },
   });
 
   return (
     <View style={[styles.container, task.completed && styles.completedContainer]}>
-      <View style={styles.leftSection}>
-        <View style={[styles.pointsBadge, task.completed && styles.completedBadge]}>
-          <IconSymbol
-            ios_icon_name="star.fill"
-            android_material_icon_name="star"
-            size={14}
-            color={task.completed ? colors.textSecondary : colors.accent}
-          />
-          <Text style={[styles.pointsText, task.completed && styles.completedText]}>
-            {task.points}
-          </Text>
-        </View>
-        <View style={styles.taskInfo}>
-          <Text style={[styles.taskName, task.completed && styles.completedText]}>
-            {task.name}
-          </Text>
-          {task.description && (
-            <Text style={[styles.taskDescription, task.completed && styles.completedText]}>
-              {task.description}
+      <View style={styles.header}>
+        <View style={styles.leftSection}>
+          <View style={[styles.pointsBadge, task.completed && styles.completedBadge]}>
+            <IconSymbol
+              ios_icon_name="star.fill"
+              android_material_icon_name="star"
+              size={14}
+              color={task.completed ? colors.textSecondary : colors.accent}
+            />
+            <Text style={[styles.pointsText, task.completed && styles.completedText]}>
+              {task.points}
             </Text>
-          )}
-          {child && (
-            <View style={styles.assignedContainer}>
-              <Text style={styles.assignedText}>
-                {child.avatar} {child.name}
+          </View>
+          <View style={styles.taskInfo}>
+            <Text style={[styles.taskName, task.completed && styles.completedText]}>
+              {task.name}
+            </Text>
+            {task.description && (
+              <Text style={[styles.taskDescription, task.completed && styles.completedText]}>
+                {task.description}
               </Text>
-            </View>
-          )}
+            )}
+          </View>
         </View>
+        {showActions && !task.completed && onDelete && (
+          <TouchableOpacity
+            style={styles.deleteButton}
+            onPress={onDelete}
+            activeOpacity={0.7}
+          >
+            <IconSymbol
+              ios_icon_name="trash"
+              android_material_icon_name="delete"
+              size={20}
+              color={colors.textSecondary}
+            />
+          </TouchableOpacity>
+        )}
+        {task.completed && (
+          <View style={styles.completedBadgeContainer}>
+            <IconSymbol
+              ios_icon_name="checkmark.circle.fill"
+              android_material_icon_name="check_circle"
+              size={28}
+              color={colors.primary}
+            />
+          </View>
+        )}
       </View>
-      {showActions && !task.completed && (
-        <View style={styles.actionsContainer}>
-          {onComplete && (
-            <TouchableOpacity
-              style={styles.completeButton}
-              onPress={onComplete}
-              activeOpacity={0.7}
-            >
-              <IconSymbol
-                ios_icon_name="checkmark.circle.fill"
-                android_material_icon_name="check_circle"
-                size={32}
-                color={colors.primary}
-              />
-            </TouchableOpacity>
-          )}
-          {onDelete && (
-            <TouchableOpacity
-              style={styles.deleteButton}
-              onPress={onDelete}
-              activeOpacity={0.7}
-            >
-              <IconSymbol
-                ios_icon_name="trash"
-                android_material_icon_name="delete"
-                size={20}
-                color={colors.textSecondary}
-              />
-            </TouchableOpacity>
-          )}
+
+      {isMultipleAssignment && children && children.length > 0 && (
+        <View style={styles.assignedContainer}>
+          <Text style={styles.assignedLabel}>Assigned to:</Text>
+          <View style={styles.childrenList}>
+            {children.map((child, index) => {
+              const isCompleted = completedBy.includes(child.id);
+              return (
+                <React.Fragment key={index}>
+                  <View style={[styles.childRow, isCompleted && styles.childCompleted]}>
+                    <View style={styles.childInfo}>
+                      <Text style={styles.childAvatar}>{child.avatar}</Text>
+                      <Text style={styles.childName}>{child.name}</Text>
+                    </View>
+                    {showActions && !task.completed && (
+                      <>
+                        {isCompleted ? (
+                          <IconSymbol
+                            ios_icon_name="checkmark.circle.fill"
+                            android_material_icon_name="check_circle"
+                            size={24}
+                            color={colors.primary}
+                          />
+                        ) : (
+                          onComplete && (
+                            <TouchableOpacity
+                              style={styles.completeButton}
+                              onPress={() => onComplete(child.id)}
+                              activeOpacity={0.7}
+                            >
+                              <IconSymbol
+                                ios_icon_name="circle"
+                                android_material_icon_name="radio_button_unchecked"
+                                size={24}
+                                color={colors.textSecondary}
+                              />
+                            </TouchableOpacity>
+                          )
+                        )}
+                      </>
+                    )}
+                    {task.completed && isCompleted && (
+                      <IconSymbol
+                        ios_icon_name="checkmark.circle.fill"
+                        android_material_icon_name="check_circle"
+                        size={24}
+                        color={colors.primary}
+                      />
+                    )}
+                  </View>
+                </React.Fragment>
+              );
+            })}
+          </View>
         </View>
       )}
-      {task.completed && (
-        <View style={styles.completedBadgeContainer}>
-          <IconSymbol
-            ios_icon_name="checkmark.circle.fill"
-            android_material_icon_name="check_circle"
-            size={28}
-            color={colors.primary}
-          />
+
+      {!isMultipleAssignment && children && children.length === 1 && (
+        <View style={styles.singleChildContainer}>
+          <Text style={styles.singleChildText}>
+            {children[0].avatar} {children[0].name}
+          </Text>
         </View>
       )}
     </View>

@@ -25,30 +25,65 @@ export default function HomeScreen() {
   const activeTasks = tasks.filter(t => !t.completed);
   const completedTasks = tasks.filter(t => t.completed);
 
-  const handleCompleteTask = (taskId: string) => {
+  const getTaskChildren = (task: any) => {
+    if (!task.assignedTo) {
+      return [];
+    }
+    
+    if (Array.isArray(task.assignedTo)) {
+      return children.filter(c => task.assignedTo.includes(c.id));
+    } else {
+      const child = children.find(c => c.id === task.assignedTo);
+      return child ? [child] : [];
+    }
+  };
+
+  const handleCompleteTask = (taskId: string, childId: string) => {
     const task = tasks.find(t => t.id === taskId);
-    if (!task || !task.assignedTo) {
-      Alert.alert('Error', 'This task is not assigned to anyone');
+    if (!task) {
+      Alert.alert('Error', 'Task not found');
       return;
     }
 
-    const child = children.find(c => c.id === task.assignedTo);
+    const child = children.find(c => c.id === childId);
     if (!child) {
       Alert.alert('Error', 'Child not found');
       return;
     }
 
-    Alert.alert(
-      'Complete Task',
-      `Mark "${task.name}" as complete for ${child.name}? They will earn ${task.points} points.`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Complete',
-          onPress: () => completeTask(taskId, child.id),
-        },
-      ]
-    );
+    const isMultipleAssignment = Array.isArray(task.assignedTo);
+    const completedBy = task.completedBy || [];
+
+    if (isMultipleAssignment) {
+      if (completedBy.includes(childId)) {
+        Alert.alert('Already Completed', `${child.name} has already completed this task.`);
+        return;
+      }
+
+      Alert.alert(
+        'Complete Task',
+        `Mark "${task.name}" as complete for ${child.name}? They will earn ${task.points} points.`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Complete',
+            onPress: () => completeTask(taskId, childId),
+          },
+        ]
+      );
+    } else {
+      Alert.alert(
+        'Complete Task',
+        `Mark "${task.name}" as complete for ${child.name}? They will earn ${task.points} points.`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Complete',
+            onPress: () => completeTask(taskId, childId),
+          },
+        ]
+      );
+    }
   };
 
   const handleDeleteTask = (taskId: string) => {
@@ -260,13 +295,13 @@ export default function HomeScreen() {
                 </View>
               ) : (
                 activeTasks.map((task, index) => {
-                  const assignedChild = task.assignedTo ? children.find(c => c.id === task.assignedTo) : undefined;
+                  const taskChildren = getTaskChildren(task);
                   return (
                     <React.Fragment key={index}>
                       <TaskCard
                         task={task}
-                        child={assignedChild}
-                        onComplete={() => handleCompleteTask(task.id)}
+                        children={taskChildren}
+                        onComplete={(childId) => handleCompleteTask(task.id, childId)}
                         onDelete={() => handleDeleteTask(task.id)}
                       />
                     </React.Fragment>
@@ -279,12 +314,12 @@ export default function HomeScreen() {
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Completed Tasks</Text>
                 {completedTasks.map((task, index) => {
-                  const assignedChild = task.assignedTo ? children.find(c => c.id === task.assignedTo) : undefined;
+                  const taskChildren = getTaskChildren(task);
                   return (
                     <React.Fragment key={index}>
                       <TaskCard
                         task={task}
-                        child={assignedChild}
+                        children={taskChildren}
                         showActions={false}
                       />
                     </React.Fragment>

@@ -8,7 +8,7 @@ import { IconSymbol } from './IconSymbol';
 interface AddTaskModalProps {
   visible: boolean;
   onClose: () => void;
-  onAdd: (name: string, points: number, description?: string, assignedTo?: string) => void;
+  onAdd: (name: string, points: number, description?: string, assignedTo?: string | string[]) => void;
   childrenList: Child[];
 }
 
@@ -17,16 +17,49 @@ export function AddTaskModal({ visible, onClose, onAdd, childrenList }: AddTaskM
   const [name, setName] = useState('');
   const [points, setPoints] = useState('');
   const [description, setDescription] = useState('');
-  const [selectedChild, setSelectedChild] = useState<string | undefined>(undefined);
+  const [selectedChildren, setSelectedChildren] = useState<string[]>([]);
+  const [assignToAll, setAssignToAll] = useState(false);
 
   const handleAdd = () => {
     if (name.trim() && points.trim()) {
-      onAdd(name.trim(), parseInt(points), description.trim() || undefined, selectedChild);
+      let assignedTo: string | string[] | undefined = undefined;
+      
+      if (assignToAll) {
+        assignedTo = childrenList.map(c => c.id);
+      } else if (selectedChildren.length > 0) {
+        assignedTo = selectedChildren.length === 1 ? selectedChildren[0] : selectedChildren;
+      }
+      
+      onAdd(name.trim(), parseInt(points), description.trim() || undefined, assignedTo);
       setName('');
       setPoints('');
       setDescription('');
-      setSelectedChild(undefined);
+      setSelectedChildren([]);
+      setAssignToAll(false);
       onClose();
+    }
+  };
+
+  const toggleChild = (childId: string) => {
+    if (assignToAll) {
+      setAssignToAll(false);
+    }
+    
+    setSelectedChildren(prev => {
+      if (prev.includes(childId)) {
+        return prev.filter(id => id !== childId);
+      } else {
+        return [...prev, childId];
+      }
+    });
+  };
+
+  const toggleAssignToAll = () => {
+    if (!assignToAll) {
+      setAssignToAll(true);
+      setSelectedChildren([]);
+    } else {
+      setAssignToAll(false);
     }
   };
 
@@ -78,6 +111,46 @@ export function AddTaskModal({ visible, onClose, onAdd, childrenList }: AddTaskM
     textArea: {
       height: 80,
       textAlignVertical: 'top',
+    },
+    assignmentContainer: {
+      gap: 8,
+    },
+    allChildrenOption: {
+      backgroundColor: colors.card,
+      borderRadius: 8,
+      padding: 14,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      borderWidth: 2,
+      borderColor: 'transparent',
+      marginBottom: 8,
+    },
+    selectedAllOption: {
+      borderColor: colors.primary,
+      backgroundColor: colors.highlight,
+    },
+    allChildrenText: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: colors.text,
+    },
+    dividerContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginVertical: 12,
+    },
+    divider: {
+      flex: 1,
+      height: 1,
+      backgroundColor: colors.textSecondary,
+      opacity: 0.3,
+    },
+    dividerText: {
+      fontSize: 12,
+      fontWeight: '600',
+      color: colors.textSecondary,
+      marginHorizontal: 12,
     },
     childrenContainer: {
       flexDirection: 'row',
@@ -192,30 +265,65 @@ export function AddTaskModal({ visible, onClose, onAdd, childrenList }: AddTaskM
             />
 
             <Text style={styles.label}>Assign To (Optional)</Text>
-            <View style={styles.childrenContainer}>
-              {childrenList.map((child, index) => (
-                <React.Fragment key={index}>
-                  <TouchableOpacity
-                    style={[
-                      styles.childOption,
-                      selectedChild === child.id && styles.selectedChildOption,
-                    ]}
-                    onPress={() => setSelectedChild(selectedChild === child.id ? undefined : child.id)}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.childAvatar}>{child.avatar}</Text>
-                    <Text style={styles.childName}>{child.name}</Text>
-                    {selectedChild === child.id && (
-                      <IconSymbol
-                        ios_icon_name="checkmark"
-                        android_material_icon_name="check"
-                        size={20}
-                        color={colors.primary}
-                      />
-                    )}
-                  </TouchableOpacity>
-                </React.Fragment>
-              ))}
+            <View style={styles.assignmentContainer}>
+              <TouchableOpacity
+                style={[
+                  styles.allChildrenOption,
+                  assignToAll && styles.selectedAllOption,
+                ]}
+                onPress={toggleAssignToAll}
+                activeOpacity={0.7}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <IconSymbol
+                    ios_icon_name="person.2.fill"
+                    android_material_icon_name="people"
+                    size={24}
+                    color={assignToAll ? colors.primary : colors.text}
+                  />
+                  <Text style={styles.allChildrenText}>All Children</Text>
+                </View>
+                {assignToAll && (
+                  <IconSymbol
+                    ios_icon_name="checkmark.circle.fill"
+                    android_material_icon_name="check_circle"
+                    size={24}
+                    color={colors.primary}
+                  />
+                )}
+              </TouchableOpacity>
+
+              <View style={styles.dividerContainer}>
+                <View style={styles.divider} />
+                <Text style={styles.dividerText}>OR</Text>
+                <View style={styles.divider} />
+              </View>
+
+              <View style={styles.childrenContainer}>
+                {childrenList.map((child, index) => (
+                  <React.Fragment key={index}>
+                    <TouchableOpacity
+                      style={[
+                        styles.childOption,
+                        selectedChildren.includes(child.id) && styles.selectedChildOption,
+                      ]}
+                      onPress={() => toggleChild(child.id)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.childAvatar}>{child.avatar}</Text>
+                      <Text style={styles.childName}>{child.name}</Text>
+                      {selectedChildren.includes(child.id) && (
+                        <IconSymbol
+                          ios_icon_name="checkmark"
+                          android_material_icon_name="check"
+                          size={20}
+                          color={colors.primary}
+                        />
+                      )}
+                    </TouchableOpacity>
+                  </React.Fragment>
+                ))}
+              </View>
             </View>
           </ScrollView>
 
