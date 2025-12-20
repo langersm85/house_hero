@@ -201,15 +201,24 @@ export default function HomeScreen() {
   };
 
   const handleDeleteReward = (rewardId: string) => {
+    const reward = rewards.find(r => r.id === rewardId);
+    if (!reward) {
+      console.log('Reward not found');
+      return;
+    }
+
     Alert.alert(
       'Delete Reward',
-      'Are you sure you want to delete this reward?',
+      `Delete "${reward.name}"? This can't be undone.`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: () => deleteReward(rewardId),
+          onPress: () => {
+            deleteReward(rewardId);
+            console.log(`Reward ${rewardId} deleted from database`);
+          },
         },
       ]
     );
@@ -570,7 +579,7 @@ export default function HomeScreen() {
                       reward={reward}
                       onEdit={() => handleEditReward(reward)}
                       onDelete={() => handleDeleteReward(reward.id)}
-                      showActions={false}
+                      showActions={true}
                     />
                     <View style={styles.redeemContainer}>
                       {children.map((child, childIndex) => (

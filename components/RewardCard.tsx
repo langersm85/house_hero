@@ -77,7 +77,7 @@ export function RewardCard({ reward, onRedeem, onEdit, onDelete, canRedeem = fal
     actionsContainer: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 8,
+      gap: 4,
     },
     redeemButton: {
       backgroundColor: colors.secondary,
@@ -98,7 +98,10 @@ export function RewardCard({ reward, onRedeem, onEdit, onDelete, canRedeem = fal
       color: colors.card,
     },
     iconButton: {
-      padding: 4,
+      width: 44,
+      height: 44,
+      justifyContent: 'center',
+      alignItems: 'center',
     },
   });
 
@@ -150,7 +153,7 @@ export function RewardCard({ reward, onRedeem, onEdit, onDelete, canRedeem = fal
               <IconSymbol
                 ios_icon_name="pencil"
                 android_material_icon_name="edit"
-                size={20}
+                size={22}
                 color={colors.primary}
               />
             </TouchableOpacity>
@@ -164,8 +167,8 @@ export function RewardCard({ reward, onRedeem, onEdit, onDelete, canRedeem = fal
               <IconSymbol
                 ios_icon_name="trash"
                 android_material_icon_name="delete"
-                size={20}
-                color={colors.textSecondary}
+                size={22}
+                color="#FF3B30"
               />
             </TouchableOpacity>
           )}
