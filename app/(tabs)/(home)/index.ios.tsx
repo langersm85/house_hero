@@ -104,6 +104,30 @@ export default function HomeScreen() {
     );
   };
 
+  const handleDeleteCompletedTask = (taskId: string) => {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) {
+      console.log('Task not found');
+      return;
+    }
+
+    Alert.alert(
+      'Delete Completed Task',
+      `Delete "${task.name}"? This can't be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            deleteTask(taskId);
+            console.log(`Completed task ${taskId} deleted from database`);
+          },
+        },
+      ]
+    );
+  };
+
   const handleResetTask = (taskId: string) => {
     const task = tasks.find(t => t.id === taskId);
     if (!task) {
@@ -366,19 +390,34 @@ export default function HomeScreen() {
                           assignedChildren={taskChildren}
                           showActions={false}
                         />
-                        <TouchableOpacity
-                          style={styles.resetButton}
-                          onPress={() => handleResetTask(task.id)}
-                          activeOpacity={0.7}
-                        >
-                          <IconSymbol
-                            ios_icon_name="arrow.counterclockwise"
-                            android_material_icon_name="refresh"
-                            size={18}
-                            color={colors.card}
-                          />
-                          <Text style={styles.resetButtonText}>Reset Task</Text>
-                        </TouchableOpacity>
+                        <View style={styles.completedTaskActions}>
+                          <TouchableOpacity
+                            style={styles.resetButton}
+                            onPress={() => handleResetTask(task.id)}
+                            activeOpacity={0.7}
+                          >
+                            <IconSymbol
+                              ios_icon_name="arrow.counterclockwise"
+                              android_material_icon_name="refresh"
+                              size={18}
+                              color={colors.card}
+                            />
+                            <Text style={styles.resetButtonText}>Reset Task</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            style={styles.deleteButton}
+                            onPress={() => handleDeleteCompletedTask(task.id)}
+                            activeOpacity={0.7}
+                          >
+                            <IconSymbol
+                              ios_icon_name="trash"
+                              android_material_icon_name="delete"
+                              size={18}
+                              color="#FF3B30"
+                            />
+                            <Text style={styles.deleteButtonText}>Delete</Text>
+                          </TouchableOpacity>
+                        </View>
                       </View>
                     </React.Fragment>
                   );
@@ -635,7 +674,13 @@ const styles = StyleSheet.create({
   completedTaskWrapper: {
     marginBottom: 12,
   },
+  completedTaskActions: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 8,
+  },
   resetButton: {
+    flex: 1,
     backgroundColor: colors.secondary,
     flexDirection: 'row',
     alignItems: 'center',
@@ -644,10 +689,29 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 8,
-    marginTop: 8,
+    minHeight: 44,
   },
   resetButtonText: {
     color: colors.card,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  deleteButton: {
+    backgroundColor: colors.card,
+    borderWidth: 2,
+    borderColor: '#FF3B30',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    minHeight: 44,
+    minWidth: 44,
+  },
+  deleteButtonText: {
+    color: '#FF3B30',
     fontSize: 14,
     fontWeight: '600',
   },
