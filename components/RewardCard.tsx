@@ -8,12 +8,13 @@ import { IconSymbol } from './IconSymbol';
 interface RewardCardProps {
   reward: Reward;
   onRedeem?: () => void;
+  onEdit?: () => void;
   onDelete?: () => void;
   canRedeem?: boolean;
   showActions?: boolean;
 }
 
-export function RewardCard({ reward, onRedeem, onDelete, canRedeem = false, showActions = true }: RewardCardProps) {
+export function RewardCard({ reward, onRedeem, onEdit, onDelete, canRedeem = false, showActions = true }: RewardCardProps) {
   const colors = useThemeColors();
 
   const getRewardIcon = (type: Reward['type']) => {
@@ -96,7 +97,7 @@ export function RewardCard({ reward, onRedeem, onDelete, canRedeem = false, show
     disabledButtonText: {
       color: colors.card,
     },
-    deleteButton: {
+    iconButton: {
       padding: 4,
     },
   });
@@ -140,9 +141,23 @@ export function RewardCard({ reward, onRedeem, onDelete, canRedeem = false, show
               </Text>
             </TouchableOpacity>
           )}
+          {onEdit && (
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={onEdit}
+              activeOpacity={0.7}
+            >
+              <IconSymbol
+                ios_icon_name="pencil"
+                android_material_icon_name="edit"
+                size={20}
+                color={colors.primary}
+              />
+            </TouchableOpacity>
+          )}
           {onDelete && (
             <TouchableOpacity
-              style={styles.deleteButton}
+              style={styles.iconButton}
               onPress={onDelete}
               activeOpacity={0.7}
             >

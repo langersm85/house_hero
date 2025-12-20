@@ -8,16 +8,19 @@ import { TaskCard } from '@/components/TaskCard';
 import { RewardCard } from '@/components/RewardCard';
 import { AddTaskModal } from '@/components/AddTaskModal';
 import { AddRewardModal } from '@/components/AddRewardModal';
+import { EditRewardModal } from '@/components/EditRewardModal';
 import { AddChildModal } from '@/components/AddChildModal';
 import { EditChildModal } from '@/components/EditChildModal';
 import { IconSymbol } from '@/components/IconSymbol';
-import { Child } from '@/types/chore.types';
+import { Child, Reward } from '@/types/chore.types';
 
 export default function HomeScreen() {
   const colors = useThemeColors();
-  const { children, tasks, rewards, completeTask, deleteTask, resetTask, addTask, addTaskTemplate, deleteReward, addReward, redeemReward, addChild, updateChild, deleteChild, isLoading } = useChores();
+  const { children, tasks, rewards, completeTask, deleteTask, resetTask, addTask, addTaskTemplate, deleteReward, updateReward, addReward, redeemReward, addChild, updateChild, deleteChild, isLoading } = useChores();
   const [showAddTask, setShowAddTask] = useState(false);
   const [showAddReward, setShowAddReward] = useState(false);
+  const [showEditReward, setShowEditReward] = useState(false);
+  const [editingReward, setEditingReward] = useState<Reward | null>(null);
   const [showAddChild, setShowAddChild] = useState(false);
   const [showEditChild, setShowEditChild] = useState(false);
   const [editingChild, setEditingChild] = useState<Child | null>(null);
@@ -152,6 +155,17 @@ export default function HomeScreen() {
         },
       ]
     );
+  };
+
+  const handleEditReward = (reward: Reward) => {
+    setEditingReward(reward);
+    setShowEditReward(true);
+  };
+
+  const handleUpdateReward = (id: string, name: string, pointsRequired: number, type: Reward['type'], description?: string) => {
+    updateReward(id, name, pointsRequired, type, description);
+    setShowEditReward(false);
+    setEditingReward(null);
   };
 
   const handleRedeemReward = (rewardId: string, childId: string) => {
@@ -554,6 +568,7 @@ export default function HomeScreen() {
                   <View style={styles.rewardItem}>
                     <RewardCard
                       reward={reward}
+                      onEdit={() => handleEditReward(reward)}
                       onDelete={() => handleDeleteReward(reward.id)}
                       showActions={false}
                     />
@@ -599,6 +614,16 @@ export default function HomeScreen() {
         visible={showAddReward}
         onClose={() => setShowAddReward(false)}
         onAdd={addReward}
+      />
+
+      <EditRewardModal
+        visible={showEditReward}
+        onClose={() => {
+          setShowEditReward(false);
+          setEditingReward(null);
+        }}
+        onUpdate={handleUpdateReward}
+        reward={editingReward}
       />
 
       <AddChildModal

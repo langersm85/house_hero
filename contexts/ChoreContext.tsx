@@ -21,6 +21,7 @@ interface ChoreContextType {
   deleteTask: (taskId: string) => void;
   resetTask: (taskId: string) => void;
   addReward: (name: string, pointsRequired: number, type: Reward['type'], description?: string) => void;
+  updateReward: (id: string, name: string, pointsRequired: number, type: Reward['type'], description?: string) => void;
   deleteReward: (rewardId: string) => void;
   redeemReward: (rewardId: string, childId: string) => boolean;
   isLoading: boolean;
@@ -322,6 +323,14 @@ export function ChoreProvider({ children: reactChildren }: { children: ReactNode
     setRewards(prev => [...prev, newReward]);
   };
 
+  const updateReward = (id: string, name: string, pointsRequired: number, type: Reward['type'], description?: string) => {
+    setRewards(prev =>
+      prev.map(reward =>
+        reward.id === id ? { ...reward, name, pointsRequired, type, description } : reward
+      )
+    );
+  };
+
   const deleteReward = (rewardId: string) => {
     setRewards(prev => prev.filter(r => r.id !== rewardId));
   };
@@ -371,6 +380,7 @@ export function ChoreProvider({ children: reactChildren }: { children: ReactNode
         deleteTask,
         resetTask,
         addReward,
+        updateReward,
         deleteReward,
         redeemReward,
         isLoading,
