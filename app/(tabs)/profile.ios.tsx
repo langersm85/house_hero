@@ -34,7 +34,7 @@ export default function ProfileScreen() {
   };
 
   const handleContactSupport = async () => {
-    const email = 'support@househero.app';
+    const email = 'langersm@gmail.com';
     const url = `mailto:${email}`;
     
     try {
@@ -42,11 +42,11 @@ export default function ProfileScreen() {
       if (canOpen) {
         await Linking.openURL(url);
       } else {
-        Alert.alert('Email Not Available', 'Please contact us at support@househero.app');
+        Alert.alert('Email Not Available', 'Please contact us at langersm@gmail.com');
       }
     } catch (error) {
       console.log('Error opening email client:', error);
-      Alert.alert('Email Not Available', 'Please contact us at support@househero.app');
+      Alert.alert('Email Not Available', 'Please contact us at langersm@gmail.com');
     }
   };
 
