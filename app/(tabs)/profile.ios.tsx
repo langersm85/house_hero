@@ -50,18 +50,6 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleSignIn = () => {
-    Alert.alert('Sign In', 'Sign in functionality coming soon!');
-  };
-
-  const handleUpgrade = () => {
-    Alert.alert('Upgrade', 'Upgrade functionality coming soon!');
-  };
-
-  const handleRestorePurchases = () => {
-    Alert.alert('Restore Purchases', 'Restore purchases functionality coming soon!');
-  };
-
   const styles = StyleSheet.create({
     container: {
       flex: 1,
@@ -278,20 +266,6 @@ export default function ProfileScreen() {
       opacity: 0.2,
       marginVertical: 16,
     },
-    accountCard: {
-      backgroundColor: colors.card,
-      borderRadius: 12,
-      padding: 20,
-      marginBottom: 12,
-      boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
-      elevation: 2,
-    },
-    accountText: {
-      fontSize: 16,
-      color: colors.text,
-      marginBottom: 16,
-      textAlign: 'center',
-    },
     primaryButton: {
       backgroundColor: colors.primary,
       borderRadius: 12,
@@ -303,41 +277,6 @@ export default function ProfileScreen() {
       fontSize: 16,
       fontWeight: '700',
       color: '#FFFFFF',
-    },
-    secondaryButton: {
-      backgroundColor: colors.card,
-      borderRadius: 12,
-      padding: 16,
-      alignItems: 'center',
-      marginBottom: 12,
-      borderWidth: 2,
-      borderColor: colors.primary,
-    },
-    secondaryButtonText: {
-      fontSize: 16,
-      fontWeight: '700',
-      color: colors.primary,
-    },
-    helperText: {
-      fontSize: 13,
-      color: colors.textSecondary,
-      textAlign: 'center',
-      lineHeight: 18,
-    },
-    subscriptionCard: {
-      backgroundColor: colors.card,
-      borderRadius: 12,
-      padding: 20,
-      marginBottom: 12,
-      boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
-      elevation: 2,
-    },
-    planText: {
-      fontSize: 16,
-      color: colors.text,
-      marginBottom: 16,
-      textAlign: 'center',
-      fontWeight: '600',
     },
   });
 
@@ -529,51 +468,6 @@ export default function ProfileScreen() {
               color={colors.textSecondary}
             />
           </TouchableOpacity>
-        </View>
-
-        <View style={styles.divider} />
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Account</Text>
-          <View style={styles.accountCard}>
-            <Text style={styles.accountText}>You&apos;re not signed in</Text>
-            <TouchableOpacity
-              style={styles.primaryButton}
-              onPress={handleSignIn}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.primaryButtonText}>Sign in</Text>
-            </TouchableOpacity>
-            <Text style={styles.helperText}>
-              Sign in is required for subscriptions and restore purchases.
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.divider} />
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Subscription</Text>
-          <View style={styles.subscriptionCard}>
-            <Text style={styles.planText}>Current plan: Free</Text>
-            <TouchableOpacity
-              style={styles.primaryButton}
-              onPress={handleUpgrade}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.primaryButtonText}>Upgrade</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.secondaryButton}
-              onPress={handleRestorePurchases}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.secondaryButtonText}>Restore purchases</Text>
-            </TouchableOpacity>
-            <Text style={styles.helperText}>
-              If you already subscribed, restore to unlock.
-            </Text>
-          </View>
         </View>
 
         <View style={styles.divider} />
