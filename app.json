@@ -1,8 +1,7 @@
-
 {
   "expo": {
     "name": "House Hero",
-    "slug": "Natively",
+    "slug": "House Hero",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./app-icon.png",
@@ -44,5 +43,6 @@
     "extra": {
       "router": {}
     }
-  }
+  },
+  "scheme": "House Hero"
 }
