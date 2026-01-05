@@ -1,10 +1,11 @@
+
 {
   "expo": {
     "name": "House Hero",
     "slug": "House Hero",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./app-icon.png",
+    "icon": "./assets/images/app-icon.png",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
@@ -21,7 +22,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./app-icon.png",
+        "foregroundImage": "./assets/images/app-icon.png",
         "backgroundColor": "#000000"
       },
       "edgeToEdgeEnabled": true,
@@ -36,13 +37,12 @@
       "expo-router",
       "expo-web-browser"
     ],
-    "scheme": "natively",
+    "scheme": "househero",
     "experiments": {
       "typedRoutes": true
     },
     "extra": {
       "router": {}
     }
-  },
-  "scheme": "House Hero"
+  }
 }
